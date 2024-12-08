@@ -88,3 +88,7 @@ Cargo.lock
 .env.*.local
 .local
 .cache
+
+# Homebrew
+Brewfile.lock.json
+.brew-update
