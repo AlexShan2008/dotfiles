@@ -1,6 +1,7 @@
 # Taps
 tap "homebrew/bundle"
 tap "homebrew/services"
+tap "homebrew/cask-fonts"
 
 # CLI Tools
 brew "git"
