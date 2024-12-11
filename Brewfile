@@ -6,11 +6,13 @@ tap "homebrew/cask-fonts"
 # CLI Tools
 brew "git"
 brew "git-lfs"
-brew "node"
 brew "zsh"
 
+# Mac App Store command-line interface
+brew "mas"
+
 # Terminal
-cask "iterm2"
+cask "warp"
 cask "starship"
 
 # Code Editors

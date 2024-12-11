@@ -4,18 +4,14 @@
 
 ## Overview
 
-A collection of configuration files and automation scripts for quickly setting up a consistent development environment on macOS systems, including:
+A collection of configuration files and automation scripts for quickly setting up a consistent development environment on macOS systems, including but not limited to:
 
-- Preconfigured settings for commonly used tools and applications
-- Scripts to automate environment setup and updates
-- An organized structure for easy customization and management
-
-Key components:
-
-- Homebrew
-- Node.js
-- Visual Studio Code
-- iTerm2
+- Git configuration: [.config/git](https://github.com/AlexShan2008/dotfiles/tree/main/.config/git)
+- Homebrew package installation: [Brewfile](https://github.com/AlexShan2008/dotfiles/blob/main/Brewfile)
+- Shell environment setup: [.zshrc](https://github.com/AlexShan2008/dotfiles/blob/main/.zshrc)
+- SSH config: [.ssh/config](https://github.com/AlexShan2008/dotfiles/blob/main/.ssh/config)
+- Setup script：[.config/scripts/macos-bootstrap.zsh](https://github.com/AlexShan2008/dotfiles/blob/main/.config/scripts/setup-macos.zsh)
+- Terminal customization: [.config/starship](https://github.com/AlexShan2008/dotfiles/blob/main/.config/starship/starship.toml)
 
 These files are managed using a **Git Bare Repo**, which keeps the `$HOME` directory clean.
 
