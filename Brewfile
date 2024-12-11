@@ -11,6 +11,7 @@ brew "zsh"
 
 # Terminal
 cask "iterm2"
+cask "starship"
 
 # Code Editors
 cask "visual-studio-code"
