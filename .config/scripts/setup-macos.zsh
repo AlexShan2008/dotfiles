@@ -157,7 +157,7 @@ install_homebrew_packages() {
   return $brew_bundle_status
 }
 
-install_nodejs() {
+install_nodejs_and_pnpm() {
   log "INFO" "==========================================================="
   log "INFO" "               Setting up Node.js Environment              "
   log "INFO" "-----------------------------------------------------------"
@@ -297,7 +297,7 @@ main() {
   setup_ohmyzsh
   install_homebrew
   install_homebrew_packages
-  install_nodejs
+  install_nodejs_and_pnpm
   install_rust
   reload_zshrc
   setup_iterm2
