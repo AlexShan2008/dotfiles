@@ -91,6 +91,9 @@ alias ls='eza --reverse --sort=modified --group-directories-first'
 alias lt='ll --tree --git-ignore --ignore-glob=.git'
 alias pip='python -m pip'
 alias python='python3'
+alias pn='pnpm'
+alias pni='pnpm install'
+alias pnr='pnpm run'
 
 # Path Alias
 # usage: cd ~xxx
