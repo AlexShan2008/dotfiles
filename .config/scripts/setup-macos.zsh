@@ -82,31 +82,29 @@ setup_ohmyzsh() {
     log "INFO" "Oh My Zsh installed successfully."
   fi
 
-  local ZSH_PLUGINS_PREFIX="$HOME/.zsh/plugins"
-  local plugins=(
-    "zsh-users/zsh-autosuggestions"
-    "zsh-users/zsh-completions"
-    "zdharma-continuum/fast-syntax-highlighting"
-  )
+  echo "-----------------------------------------------------------"
+  echo "        * Installing ZSH Custom Plugins & Themes...        "
+  echo "                                                           "
+  echo "                - zsh-autosuggestions                      "
+  echo "                - zsh-completions                          "
+  echo "                - fast-syntax-highlighting                 "
+  echo "                                                           "
+  echo "-----------------------------------------------------------"
 
-  log "INFO" "Preparing to install Zsh plugins..."
-  mkdir -p "$ZSH_PLUGINS_PREFIX"
+  export ZSH_PLUGINS_PREFIX="$HOME/.zsh/plugins"
+  [[ ! -d "$ZSH_PLUGINS_PREFIX" ]] && mkdir -p $ZSH_PLUGINS_PREFIX
 
-  for plugin_repo in "${plugins[@]}"; do
-    local plugin_name=$(basename "$plugin_repo")
-    local plugin_path="$ZSH_PLUGINS_PREFIX/$plugin_name"
+  if [[ ! -d "${ZSH_PLUGINS_PREFIX}/zsh-autosuggestions" ]]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_PLUGINS_PREFIX}/zsh-autosuggestions
+  fi
 
-    if [[ -d "$plugin_path" ]]; then
-      log "INFO" "Plugin $plugin_name is already installed, skipping."
-    else
-      log "INFO" "Cloning plugin $plugin_name from https://github.com/$plugin_repo..."
-      if ! git clone "https://github.com/$plugin_repo.git" "$plugin_path"; then
-        log "ERROR" "Failed to clone plugin $plugin_name. Skipping this plugin."
-        continue
-      fi
-      log "INFO" "Plugin $plugin_name installed successfully."
-    fi
-  done
+  if [[ ! -d "${ZSH_PLUGINS_PREFIX}/zsh-completions" ]]; then
+    git clone https://github.com/zsh-users/zsh-completions ${ZSH_PLUGINS_PREFIX}/zsh-completions
+  fi
+
+  if [[ ! -d "${ZSH_PLUGINS_PREFIX}/fsh" ]]; then
+    git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git ${ZSH_PLUGINS_PREFIX}/fsh
+  fi
 
   log "INFO" "Oh My Zsh setup complete!"
 }
