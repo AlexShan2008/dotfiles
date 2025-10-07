@@ -81,6 +81,7 @@ path=($path_dirs $path[@])
 # Alias Set
 alias c='cursor'
 alias df='$(command -v git) --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+alias df-update='$HOME/.config/scripts/update-dotfiles.zsh'
 ## ip & ipcn
 alias ip="curl ip.sb"
 alias ipcn="curl myip.ipip.net"
