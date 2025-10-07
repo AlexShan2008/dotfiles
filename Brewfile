@@ -14,6 +14,7 @@ brew "mas"
 # Terminal
 cask "warp"
 cask "starship"
+cask "ghostty"
 
 # Code Editors
 cask "visual-studio-code"
