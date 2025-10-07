@@ -7,6 +7,7 @@ tap "homebrew/cask-fonts"
 brew "git"
 brew "git-lfs"
 brew "zsh"
+brew "zoxide"
 
 # Mac App Store command-line interface
 brew "mas"
