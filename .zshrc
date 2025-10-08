@@ -212,6 +212,7 @@ ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste accept-line)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=""
 
 # Source plugins and configurations
+source $HOME/.zsh/plugins/git/git.plugin.zsh
 source $HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $HOME/.zsh/plugins/fsh/fast-syntax-highlighting.plugin.zsh
 source $HOME/.cargo/env
