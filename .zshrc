@@ -1,5 +1,9 @@
 # https://github.com/liby/dotfiles/blob/main/.zshrc
 
+# Load machine-specific configuration (not tracked by git)
+# Create ~/.zshrc.local for sensitive data like API tokens
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
 # Zsh Configuration
 COMPLETION_WAITING_DOTS="true"
 DISABLE_UNTRACKED_FILES_DIRTY="true"
