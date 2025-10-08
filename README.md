@@ -39,7 +39,7 @@ chezmoi apply
 - **Shell**: `.zshrc` with Oh My Zsh git plugin, zoxide, starship
 - **Git**: Git config, GitHub/GitLab settings, ignore patterns
 - **Editors**: Cursor settings and keybindings
-- **Terminal**: Starship prompt configuration
+- **Terminal**: Starship prompt configuration, Ghostty config
 - **Development**: Proto tools configuration
 
 ### Package Management
@@ -142,6 +142,7 @@ These values are stored in `~/.config/chezmoi/chezmoi.toml` and can be used in t
 ├── .config/                     # Application configs
 │   ├── git/                     # Git configuration
 │   ├── starship/                # Starship prompt
+│   ├── ghostty/                 # Ghostty terminal config
 │   ├── editor/                  # Editor settings
 │   └── scripts/                 # Setup scripts
 ├── .proto/                      # Proto tool config
@@ -216,4 +217,5 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 Based on best practices from:
 - [chezmoi.io](https://www.chezmoi.io/)
+- [Bryan Lee](https://github.com/liby/dotfiles)
 - Various dotfiles repositories in the community
