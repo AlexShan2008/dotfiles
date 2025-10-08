@@ -9,6 +9,7 @@ brew "git-lfs"
 brew "zsh"
 brew "zoxide"
 brew "difftastic"
+brew "eza"
 
 # Mac App Store command-line interface
 brew "mas"
