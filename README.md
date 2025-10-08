@@ -1,102 +1,219 @@
-<div>
-  <h1 align="center">Dotfiles</h1>
-</div>
+# Dotfiles
 
-## Overview
+Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 
-A collection of configuration files and automation scripts for quickly setting up a consistent development environment on macOS systems, including but not limited to:
+## 🚀 Quick Start
 
-- Git configuration: [.config/git](https://github.com/AlexShan2008/dotfiles/tree/main/.config/git)
-- Homebrew package installation: [Brewfile](https://github.com/AlexShan2008/dotfiles/blob/main/Brewfile)
-- Shell environment setup: [.zshrc](https://github.com/AlexShan2008/dotfiles/blob/main/.zshrc)
-- SSH config: [.ssh/config](https://github.com/AlexShan2008/dotfiles/blob/main/.ssh/config)
-- Setup script：[.config/scripts/macos-bootstrap.zsh](https://github.com/AlexShan2008/dotfiles/blob/main/.config/scripts/setup-macos.zsh)
-- Terminal customization: [.config/starship](https://github.com/AlexShan2008/dotfiles/blob/main/.config/starship/starship.toml)
+### First Time Setup (New Machine)
 
-These files are managed using a **Git Bare Repo**, which keeps the `$HOME` directory clean.
-
-## Installation
-
-### 1. Clone the repository:
-
-```sh
-git clone --bare git@github.com:AlexShan2008/dotfiles.git $HOME/.dotfiles
+```bash
+# One-command setup
+chezmoi init --apply git@github.com:AlexShan2008/dotfiles.git
 ```
 
-### 2. Set Up Alias
+This will:
+1. Clone this repo to `~/.local/share/chezmoi`
+2. Prompt for machine-specific configuration (email, work/personal)
+3. Apply all dotfiles to your home directory
+4. Set correct file permissions automatically
 
-Add the following to your shell config file (e.g., .zshrc or .bashrc) and reload it:
+### Manual Setup
 
-```sh
-alias df='$(command -v git) --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-source ~/.zshrc  # Use `source ~/.bashrc` if using Bash
+```bash
+# Install chezmoi
+brew install chezmoi
+
+# Initialize from this repo
+chezmoi init git@github.com:AlexShan2008/dotfiles.git
+
+# Preview changes
+chezmoi diff
+
+# Apply dotfiles
+chezmoi apply
 ```
 
-### 3. Hide untracked files
+## 📦 What's Included
 
-To avoid seeing a large list of untracked files when using the `df` command, you can use the following command:
+### Configuration Files
+- **Shell**: `.zshrc` with Oh My Zsh git plugin, zoxide, starship
+- **Git**: Git config, GitHub/GitLab settings, ignore patterns
+- **Editors**: Cursor settings and keybindings
+- **Terminal**: Starship prompt configuration
+- **Development**: Proto tools configuration
 
-```sh
-df config --local status.showUntrackedFiles no
+### Package Management
+- **Brewfile**: Homebrew packages and applications
+  - CLI tools: git, zsh, zoxide, difftastic, eza
+  - Terminal: Warp, Ghostty
+  - Editors: VS Code, Cursor, Zed
+  - Development: Docker
+  - Browsers: Chrome
+  - Fonts: Fira Code
+
+### Scripts
+- `setup-macos.zsh`: Initial macOS setup script
+- `update-dotfiles.zsh`: Daily update script for packages and configs
+
+## 🔧 Daily Usage
+
+### Editing Dotfiles
+
+```bash
+# Edit a file (opens in your $EDITOR)
+chezmoi edit ~/.zshrc
+
+# Or edit directly and update chezmoi
+vim ~/.zshrc
+chezmoi add ~/.zshrc
+
+# Preview changes
+chezmoi diff
+
+# Apply changes
+chezmoi apply
 ```
 
-If this is not set, running `df status` will list a large number of untracked files because not all files in `$HOME` are tracked by Git, and we don't intend to track all of them, which can make the output cluttered.
+### Committing Changes
 
-### 4. Checkout files
+```bash
+# Go to chezmoi source directory
+chezmoi cd
 
-Use the following command to check out the files from the repository to your `$HOME` directory:
+# Git operations
+git add .
+git commit -m "feat: update config"
+git push
 
-```sh
-df checkout
+# Or use git directly
+cd ~/.local/share/chezmoi
+git add .
+git commit -m "feat: update config"
+git push
 ```
 
-If you encounter file conflicts, such as the following error:
+### Syncing to Other Machines
 
-```sh
-error: The following untracked working tree files would be overwritten by checkout:
-  .zshrc
-Please move or remove them before you can switch branches.
-Aborting
+```bash
+# Update from remote
+chezmoi update
+
+# This is equivalent to:
+# cd ~/.local/share/chezmoi
+# git pull
+# chezmoi apply
 ```
 
-You can back up your existing configuration files first:
+## 🔐 Machine-Specific Configuration
 
-```sh
-mkdir -p .dotfiles-backup
-df checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} .dotfiles-backup/{}
+### Private Configuration (Not Tracked)
+
+Create `~/.zshrc.local` for machine-specific secrets:
+
+```bash
+# Example: ~/.zshrc.local
+export ANTHROPIC_AUTH_TOKEN="your-token"
+export WORK_SPECIFIC_VAR="value"
+
+# Work-specific aliases
+alias work-vpn='connect-to-vpn'
 ```
 
-Then try checking out the files again:
+This file is automatically sourced by `.zshrc` but ignored by chezmoi (via `.chezmoiignore`).
 
-```sh
-df checkout
+### Machine Type Configuration
+
+On first `chezmoi init`, you'll be prompted:
+- **Email**: Git email address
+- **Is Work Machine**: Different configs for work vs personal
+
+These values are stored in `~/.config/chezmoi/chezmoi.toml` and can be used in templates.
+
+## 📁 Repository Structure
+
+```
+~/.local/share/chezmoi/          # Chezmoi source directory
+├── .chezmoi.toml.tmpl           # Initial setup prompts
+├── .chezmoiignore               # Files to ignore
+├── README.md                    # This file
+├── LICENSE                      # MIT License
+├── Brewfile                     # Homebrew packages
+├── .zshrc                       # Shell configuration
+├── .config/                     # Application configs
+│   ├── git/                     # Git configuration
+│   ├── starship/                # Starship prompt
+│   ├── editor/                  # Editor settings
+│   └── scripts/                 # Setup scripts
+├── .proto/                      # Proto tool config
+└── .ssh/                        # SSH configuration
 ```
 
-## Usage
+## 🎯 Chezmoi Features Used
 
-You can use the following commands to manage your dotfiles:
+### File Attributes
+- **Private files**: SSH config (permissions 600)
+- **Executable scripts**: `setup-macos.zsh`, `update-dotfiles.zsh`
 
-```sh
-df add <file>: Add file to the repository
-df commit -m "message": Commit changes
-df remote add origin <git_url>: Set up the remote repository
-df push -u origin <branch>: Push commits to the remote repository and link the remote branch to the local branch
-df push: Push changes to the remote repository
-df pull: Pull updates from the remote repository
+### Ignored Files
+Files in `.chezmoiignore` are kept in the repo but not applied to your home directory:
+- `README.md` (documentation only)
+- `LICENSE` (documentation only)
+- `.zshrc.local` (machine-specific secrets)
+
+## 🛠️ Useful Commands
+
+```bash
+# View all managed files
+chezmoi managed
+
+# Check what would change
+chezmoi status
+
+# Show differences
+chezmoi diff
+
+# Apply specific file
+chezmoi apply ~/.zshrc
+
+# Remove a file from chezmoi
+chezmoi forget ~/.someconfig
+
+# Execute template for testing
+chezmoi execute-template "{{ .chezmoi.hostname }}"
+
+# View template data
+chezmoi data
 ```
 
-## Automated Setup (Recommended)
+## 🔄 Migration from Other Dotfiles Management
 
-For quick environment setup on a new Mac, use the bootstrap script:
+If you're migrating from a different dotfiles setup:
 
-```sh
-curl -o /tmp/setup-macos.zsh https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/.config/scripts/setup-macos.zsh && chmod +x /tmp/setup-macos.zsh && /tmp/setup-macos.zsh
+```bash
+# Add existing files to chezmoi
+chezmoi add ~/.zshrc
+chezmoi add ~/.gitconfig
+chezmoi add ~/.config/starship/starship.toml
+
+# Preview what would be added
+chezmoi add --dry-run ~/.zshrc
+
+# Bulk add directory
+chezmoi add ~/.config/git
 ```
 
-## Contribution
+## 📚 Resources
 
-Feel free to submit Issues or Pull Requests for suggestions or improvements!
+- [Chezmoi Documentation](https://www.chezmoi.io/)
+- [Chezmoi User Guide](https://www.chezmoi.io/user-guide/setup/)
+- [Managing Machine-to-Machine Differences](https://www.chezmoi.io/user-guide/manage-machine-to-machine-differences/)
 
-## Acknowledgement
+## 📝 License
 
-This repository heavily borrows from [Bryan Lee](https://github.com/liby/dotfiles). A big thanks to him for his amazing work!
+MIT License - See [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+Based on best practices from:
+- [chezmoi.io](https://www.chezmoi.io/)
+- Various dotfiles repositories in the community

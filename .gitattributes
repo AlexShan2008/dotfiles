@@ -1,0 +1,3 @@
+# Chezmoi uses special file naming conventions
+# These are the source files, not the target files
+*.tmpl text
