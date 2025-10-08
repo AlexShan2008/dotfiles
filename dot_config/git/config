@@ -1,0 +1,89 @@
+[user]
+  email = 23693423+AlexShan2008@users.noreply.github.com
+  name = Alex
+
+[alias]
+  ca = commit -a --amend --no-edit
+  cm = commit -m
+  co = checkout
+  pf = push --force
+  pr ="!f() { git fetch -fu ${2:-origin} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
+  sc = switch --create
+  st = status
+  undo = reset --hard HEAD
+
+  ### diff ###
+  dc= "!git dh | pbcopy"
+  dh = diff HEAD
+  dl = "-c diff.external=difft log -p --ext-diff"
+  ds = "!f() { git dh > /tmp/git_diff_head_$(date +\"%Y%m%d_%H%M_%S\").diff; }; f"
+
+  ### log ###
+  lg = log --graph --abbrev-commit --date=short --boundary --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cd) %Cblue[%cn]%Creset'
+
+  ### rebase ###
+  rb = rebase
+  rbc = rebase --continue
+  rbs = rebase --skip
+
+  ### tag ###
+  lt = describe --tags --abbrev=0
+
+[branch]
+  autosetuprebase = always
+
+[core]
+  attributesFile = ~/.config/git/attributes
+  autocrlf = input
+  editor = vim
+  quotepath = false
+  untrackedCache = true
+
+[diff]
+  external = difft
+  tool = difftastic
+
+[difftool]
+  prompt = false
+
+[difftool "difftastic"]
+  cmd = difft "$LOCAL" "$REMOTE"
+
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  process = git-lfs filter-process
+  smudge = git-lfs smudge -- %f
+  required = true
+
+[filter "prototools"]
+  clean = sed -E '/^(bun|deno|node|pnpm|proto|yarn) = /d'
+  smudge = cat
+  required = true
+
+[filter "signingkey"]
+  clean = sed -e '/^[[:space:]]*signingkey[[:space:]]*=/d'
+  smudge = cat
+  required = true
+
+[filter "user.config"]
+	clean = sed -E '/^[[:space:]]*(email|name|signingkey)[[:space:]]*=/d'
+  smudge = cat
+  required = true
+
+[includeIf "gitdir:~/Code/GitHub/"]
+  path = github.config
+
+[includeIf "gitdir:~/Code/GitLab/"]
+  path = gitlab.config
+
+[includeIf "gitdir:~/Code/"]
+  path = fsmonitor.config
+
+[pager]
+  difftool = true
+
+[pull]
+  rebase = true
+
+[push]
+  autoSetupRemote = true
