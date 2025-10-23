@@ -9,3 +9,6 @@ LICENSE
 *.backup
 *~
 .DS_Store
+
+# Cache and runtime files
+.config/starship/cache/
