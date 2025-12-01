@@ -223,3 +223,7 @@ source $HOME/.cargo/env
 (( $+commands[proto] )) && eval "$(proto activate zsh)"
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
+
+alias dev='pnpm install && pnpm run dev'
+alias start='pnpm install && pnpm run start'
+alias build="pnpm run build"
