@@ -26,6 +26,7 @@ cask "zed"
 
 # Development Tools
 cask "docker"
+brew "orbstack"
 
 # Browsers
 cask "google-chrome"
