@@ -1,7 +1,0 @@
-npm = "bundled"
-
-[tools.node]
-bundled-npm = true
-
-[settings]
-auto-install = true
