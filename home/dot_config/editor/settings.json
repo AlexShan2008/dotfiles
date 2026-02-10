@@ -1,0 +1,39 @@
+{
+  "workbench.colorTheme": "Solarized Light",
+  "editor.fontFamily": "Fira Code, 'Cascadia Mono-SemiLight'",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 16,
+  "editor.formatOnSave": true,
+  "workbench.preferredDarkColorTheme": "Default High Contrast",
+  "workbench.iconTheme": "vscode-icons",
+  "editor.wordWrap": "on",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false
+  },
+  "workbench.colorCustomizations": {},
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  },
+  "[less]": {
+    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+  },
+  "editor.stickyScroll.defaultModel": "foldingProviderModel",
+  "github.copilot.editor.enableAutoCompletions": true,
+  "stylelint.snippet": ["css", "postcss", "less"],
+  "stylelint.validate": ["less", "css", "scss"],
+  "cursor.cpp.disabledLanguages": [
+    "plaintext",
+    "scminput"
+  ],
+  "[json]": {
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.suggest.insertMode": "replace"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}

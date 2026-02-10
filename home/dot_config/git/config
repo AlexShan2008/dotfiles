@@ -6,14 +6,14 @@
   ca = commit -a --amend --no-edit
   cm = commit -m
   co = checkout
-  pf = push --force
+  pf = push --force-with-lease
   pr ="!f() { git fetch -fu ${2:-origin} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
   sc = switch --create
   st = status
   undo = reset --hard HEAD
 
   ### diff ###
-  dc= "!git dh | pbcopy"
+  dc = "!git dh | pbcopy"
   dh = diff HEAD
   dl = "-c diff.external=difft log -p --ext-diff"
   ds = "!f() { git dh > /tmp/git_diff_head_$(date +\"%Y%m%d_%H%M_%S\").diff; }; f"
@@ -66,7 +66,7 @@
   required = true
 
 [filter "user.config"]
-	clean = sed -E '/^[[:space:]]*(email|name|signingkey)[[:space:]]*=/d'
+  clean = sed -E '/^[[:space:]]*(email|name|signingkey)[[:space:]]*=/d'
   smudge = cat
   required = true
 

@@ -1,9 +1,5 @@
 # https://github.com/liby/dotfiles/blob/main/.zshrc
 
-# Load machine-specific configuration (not tracked by git)
-# Create ~/.zshrc.local for sensitive data like API tokens
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
-
 # Zsh Configuration
 COMPLETION_WAITING_DOTS="true"
 DISABLE_UNTRACKED_FILES_DIRTY="true"
@@ -49,8 +45,6 @@ export NPM_CONFIG_PREFIX="$HOME/.npm-global"
 export PNPM_HOME="$HOME/Library/pnpm"
 export PROTO_HOME="$HOME/.proto"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-export RUSTUP_DIST_SERVER="https://rsproxy.cn"
-export RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup"
 export STARSHIP_CACHE="$HOME/.config/starship/cache"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 export UPDATE_ZSH_DAYS=7
@@ -64,7 +58,6 @@ local -a path_dirs=(
   "$PROTO_HOME/bin"
   "$NPM_CONFIG_PREFIX/bin"
   "$PNPM_HOME"
-  "./node_modules/.bin"
   "$HOME/bin"
   "$HOME/.cargo/bin"
   "$HOME/.local/bin"
@@ -82,10 +75,9 @@ fi
 typeset -aU path
 path=($path_dirs $path[@])
 
-# Alias Set
-alias c='cursor'
-alias df='$(command -v git) --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-alias df-update='$HOME/.config/scripts/update-dotfiles.zsh'
+# Chezmoi
+alias cm='chezmoi'
+
 ## ip & ipcn
 alias ip="curl ip.sb"
 alias ipcn="curl myip.ipip.net"
@@ -204,6 +196,7 @@ setup_editor_links() {
   mkdir -p "$cursor_path" "$editor_settings_path"
 
   for file in "settings.json" "keybindings.json"; do
+    [[ ! -f "$editor_settings_path/$file" ]] && continue
     if [[ -f "$cursor_path/$file" && ! -L "$cursor_path/$file" ]]; then
       mv "$cursor_path/$file" "$cursor_path/$file.backup"
     fi
@@ -211,19 +204,28 @@ setup_editor_links() {
   done
 }
 
-# Autosuggestions configuration# https://github.com/zsh-users/zsh-autosuggestions/issues/351
+# Autosuggestions configuration
+# https://github.com/zsh-users/zsh-autosuggestions/issues/351
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste accept-line)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=""
 
 # Source plugins and configurations
-source $HOME/.zsh/plugins/git/git.plugin.zsh
-source $HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $HOME/.zsh/plugins/fsh/fast-syntax-highlighting.plugin.zsh
-source $HOME/.cargo/env
+[[ -f "$HOME/.zsh/plugins/git/git.plugin.zsh" ]] && source "$HOME/.zsh/plugins/git/git.plugin.zsh"
+[[ -f "$HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+[[ -f "$HOME/.zsh/plugins/fsh/fast-syntax-highlighting.plugin.zsh" ]] && source "$HOME/.zsh/plugins/fsh/fast-syntax-highlighting.plugin.zsh"
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 # Initialize tools and configurations
 (( $+commands[cursor] )) && setup_editor_links &>/dev/null
 (( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 (( $+commands[proto] )) && eval "$(proto activate zsh)"
-eval "$(starship init zsh)"
-eval "$(zoxide init zsh)"
+(( $+commands[starship] )) && eval "$(starship init zsh)"
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+
+alias dev='pnpm install && pnpm run dev'
+alias start='pnpm install && pnpm run start'
+alias build="pnpm run build"
+
+# Load machine-specific configuration (not tracked by git)
+# Create ~/.zshrc.local for sensitive data like API tokens
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
