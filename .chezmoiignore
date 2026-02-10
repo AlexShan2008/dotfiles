@@ -1,10 +1,6 @@
 # Local machine-specific files that should not be managed by chezmoi
 .zshrc.local
 
-# README and documentation (keep in repo but don't apply to home)
-README.md
-LICENSE
-
 # Backup files
 *.backup
 *~
