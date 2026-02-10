@@ -16,6 +16,29 @@ Pinned version (reproducible):
 CHEZMOI_VERSION=v2.52.0 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
 ```
 
+### GitHub Connectivity (CN / Restricted Networks)
+
+The installer does not modify `/etc/hosts`. In CN, prefer a proxy:
+
+```bash
+PROXY_URL=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7891 \
+curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
+```
+
+Optional: use a GitHub download proxy (pick a trusted one):
+
+```bash
+GITHUB_PROXY=https://ghproxy.com/ \
+curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
+```
+
+If `chezmoi init` still fails due to git connectivity, set a git proxy:
+
+```bash
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+```
+
 This single command will:
 
 1. Install chezmoi
