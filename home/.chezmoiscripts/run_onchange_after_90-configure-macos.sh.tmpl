@@ -1,0 +1,184 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Configure macOS system preferences via defaults write.
+# Re-runs automatically when this script is modified.
+
+set -euo pipefail
+
+echo "[INFO] Configuring macOS defaults..."
+
+# macOS version (e.g., 14.2.1)
+MACOS_VERSION="$(sw_vers -productVersion)"
+
+# Compare dotted versions: returns 0 if $1 >= $2
+version_ge() {
+  [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$2" ]
+}
+
+# Close System Settings to prevent it from overriding our changes
+if version_ge "$MACOS_VERSION" "13.0"; then
+  osascript -e 'tell application "System Settings" to quit' 2>/dev/null || true
+else
+  osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
+fi
+sleep 1
+
+# ---------------------------------------------------------------------------
+# Keyboard
+# ---------------------------------------------------------------------------
+# Fast key repeat rate (lower = faster, default is 6)
+defaults write NSGlobalDomain KeyRepeat -int 2
+defaults write NSGlobalDomain InitialKeyRepeat -int 25
+# Rollback:
+# defaults delete NSGlobalDomain KeyRepeat
+# defaults delete NSGlobalDomain InitialKeyRepeat
+# Disable press-and-hold for accent characters, enable key repeat
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+# Rollback:
+# defaults delete NSGlobalDomain ApplePressAndHoldEnabled
+# Use per-app input source (each app remembers its own input method)
+defaults write com.apple.HIToolbox AppleGlobalTextInputProperties -dict TextInputGlobalPropertyPerContextInput 1
+
+# ---------------------------------------------------------------------------
+# Trackpad
+# ---------------------------------------------------------------------------
+# Enable tap to click
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+
+# ---------------------------------------------------------------------------
+# Mouse
+# ---------------------------------------------------------------------------
+defaults write NSGlobalDomain com.apple.mouse.scaling -float 1
+
+# ---------------------------------------------------------------------------
+# Sound
+# ---------------------------------------------------------------------------
+# Play feedback sound when volume is changed
+defaults write NSGlobalDomain com.apple.sound.beep.feedback -int 1
+
+# ---------------------------------------------------------------------------
+# Appearance
+# ---------------------------------------------------------------------------
+# Follow system (auto)
+defaults write NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically -bool true
+defaults delete NSGlobalDomain AppleInterfaceStyle 2>/dev/null || true
+# Rollback:
+# defaults delete NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically
+# defaults delete NSGlobalDomain AppleInterfaceStyle
+# Always show scroll bars
+defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
+
+# ---------------------------------------------------------------------------
+# Dock
+# ---------------------------------------------------------------------------
+# Auto-hide the Dock
+defaults write com.apple.dock autohide -bool true
+# Set icon size to 46 pixels
+defaults write com.apple.dock tilesize -int 46
+# Enable magnification
+defaults write com.apple.dock magnification -bool true
+# Use scale effect for minimizing
+defaults write com.apple.dock mineffect -string "scale"
+# Don't show recent apps
+defaults write com.apple.dock show-recents -bool false
+# Rollback:
+# defaults delete com.apple.dock autohide
+# defaults delete com.apple.dock tilesize
+# defaults delete com.apple.dock magnification
+# defaults delete com.apple.dock mineffect
+# defaults delete com.apple.dock show-recents
+
+# ---------------------------------------------------------------------------
+# Finder
+# ---------------------------------------------------------------------------
+# Show status bar
+defaults write com.apple.finder ShowStatusBar -bool true
+# Show path bar
+defaults write com.apple.finder ShowPathbar -bool true
+# Show all filename extensions
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+# Keep folders on top when sorting by name
+defaults write com.apple.finder _FXSortFoldersFirst -bool true
+# Search the current folder by default
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+# Disable the warning when changing a file extension
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+# Avoid creating .DS_Store files on network or USB volumes
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+
+# ---------------------------------------------------------------------------
+# Window Manager
+# ---------------------------------------------------------------------------
+# Don't show desktop when clicking wallpaper
+if version_ge "$MACOS_VERSION" "13.0"; then
+  defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+  # Rollback:
+  # defaults delete com.apple.WindowManager EnableStandardClickToShowDesktop
+else
+  echo "[INFO] Skipping WindowManager setting (requires macOS 13+)."
+fi
+
+# ---------------------------------------------------------------------------
+# Text input & autocorrect
+# ---------------------------------------------------------------------------
+# Disable automatic spelling correction
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+defaults write NSGlobalDomain WebAutomaticSpellingCorrectionEnabled -bool false
+# Disable smart dash and quote substitution
+defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+
+# ---------------------------------------------------------------------------
+# Save & print dialogs
+# ---------------------------------------------------------------------------
+# Save to disk (not iCloud) by default
+defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+# Expand save panel by default
+defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+# Expand print panel by default
+defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+
+# ---------------------------------------------------------------------------
+# Menu bar
+# ---------------------------------------------------------------------------
+# Hide AirPlay icon in menu bar
+if version_ge "$MACOS_VERSION" "12.0"; then
+  defaults write com.apple.airplay showInMenuBarIfPresent -bool false
+  # Rollback:
+  # defaults delete com.apple.airplay showInMenuBarIfPresent
+else
+  echo "[INFO] Skipping AirPlay menu bar setting (requires macOS 12+)."
+fi
+
+# ---------------------------------------------------------------------------
+# Login & session
+# ---------------------------------------------------------------------------
+# Don't reopen windows on login
+defaults write com.apple.loginwindow TALLogoutSavesState -bool false
+
+# ---------------------------------------------------------------------------
+# Safari (developer settings)
+# ---------------------------------------------------------------------------
+# Enable the Develop menu and Web Inspector
+defaults write com.apple.Safari IncludeDevelopMenu -bool true
+defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
+defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+
+# ---------------------------------------------------------------------------
+# Activate settings & restart affected services
+# ---------------------------------------------------------------------------
+ACTIVATE_SETTINGS="/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings"
+if [ -x "$ACTIVATE_SETTINGS" ]; then
+  "$ACTIVATE_SETTINGS" -u
+else
+  echo "[WARN] activateSettings not found; skipping."
+fi
+killall Dock Finder 2>/dev/null || true
+
+echo "[INFO] macOS defaults configured"
+{{- end }}

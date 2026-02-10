@@ -88,6 +88,7 @@ chezmoi automatically runs setup scripts at the right time:
 | `20-install-packages`  | on Brewfile change | `brew bundle`              |
 | `30-setup-ohmyzsh`     | once               | Oh My Zsh + plugins        |
 | `80-install-dev-tools` | once               | proto, Node.js, pnpm, Rust |
+| `90-configure-macos`   | on change          | macOS system preferences   |
 | `99-final-message`     | on change          | Post-setup instructions    |
 
 ## Daily Usage
