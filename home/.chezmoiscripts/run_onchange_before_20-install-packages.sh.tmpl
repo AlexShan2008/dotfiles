@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Install Homebrew packages from Brewfile
+# Re-runs when Brewfile content changes
+# Brewfile hash: {{ include "../Brewfile" | sha256sum }}
+
+set -e
+
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "[ERROR] Homebrew not found, skipping package installation"
+  exit 0
+fi
+
+BREWFILE="{{ .chezmoi.sourceDir }}/../Brewfile"
+
+if [ ! -f "${BREWFILE}" ]; then
+  echo "[WARNING] Brewfile not found at ${BREWFILE}"
+  exit 0
+fi
+
+echo "[INFO] Installing packages from Brewfile..."
+brew bundle --no-lock --file="${BREWFILE}"
+echo "[INFO] Homebrew packages installed"
+{{- end }}

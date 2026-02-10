@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Install Xcode Command Line Tools (macOS only, run once)
+
+set -e
+
+if xcode-select -p >/dev/null 2>&1; then
+  echo "[INFO] Xcode Command Line Tools already installed"
+else
+  echo "[INFO] Installing Xcode Command Line Tools..."
+  xcode-select --install
+
+  # Wait for installation to complete (timeout after 10 minutes)
+  max_wait=600
+  waited=0
+  until xcode-select -p >/dev/null 2>&1; do
+    if [ "$waited" -ge "$max_wait" ]; then
+      echo "[ERROR] Timed out waiting for Xcode CLT installation"
+      exit 1
+    fi
+    sleep 5
+    waited=$((waited + 5))
+  done
+  echo "[INFO] Xcode Command Line Tools installed"
+fi
+{{- end }}

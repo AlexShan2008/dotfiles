@@ -1,0 +1,26 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Display setup completion message
+
+echo "==========================================================="
+echo "    Dotfiles applied successfully!"
+echo "==========================================================="
+echo ""
+echo "  Next steps:"
+echo "    - Open a new terminal to load the shell configuration"
+echo "    - Run 'chezmoi data' to verify your settings"
+echo "    - Run 'chezmoi managed' to see all managed files"
+echo ""
+echo "  Remaining manual tasks:"
+echo "    - Set up NPM login / .npmrc"
+echo "    - Configure SSH keys"
+echo "    - Configure GPG keys"
+echo ""
+echo "  Useful commands:"
+echo "    chezmoi update    - Pull and apply latest changes"
+echo "    chezmoi edit      - Edit a managed file"
+echo "    chezmoi diff      - Preview pending changes"
+echo "    chezmoi apply     - Apply changes"
+echo ""
+echo "==========================================================="
+{{- end }}

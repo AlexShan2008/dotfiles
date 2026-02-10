@@ -1,0 +1,16 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Install Homebrew (macOS only, skip if already installed)
+
+set -e
+
+if command -v brew >/dev/null 2>&1; then
+  echo "[INFO] Homebrew already installed"
+else
+  echo "[INFO] Installing Homebrew..."
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Ensure brew is on PATH for subsequent scripts
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+{{- end }}

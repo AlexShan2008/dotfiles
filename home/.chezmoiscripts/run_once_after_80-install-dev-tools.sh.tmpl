@@ -1,0 +1,46 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Install development tools: proto, Node.js, pnpm, Rust (run once)
+
+set -e
+
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+
+# Install proto
+if command -v proto >/dev/null 2>&1; then
+  echo "[INFO] proto already installed"
+else
+  echo "[INFO] Installing proto..."
+  curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s -- --no-profile --yes
+fi
+
+export PROTO_HOME="${HOME}/.proto"
+export PATH="${PROTO_HOME}/shims:${PROTO_HOME}/bin:${PATH}"
+
+# Install Node.js and pnpm via proto
+if command -v proto >/dev/null 2>&1; then
+  echo "[INFO] Installing Node.js via proto..."
+  proto install node || true
+
+  echo "[INFO] Installing pnpm via proto..."
+  proto install pnpm || true
+fi
+
+# Install Rust
+if command -v rustc >/dev/null 2>&1; then
+  echo "[INFO] Rust already installed"
+else
+  echo "[INFO] Installing Rust..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+
+# Install Claude Code
+if command -v claude >/dev/null 2>&1; then
+  echo "[INFO] Claude Code already installed"
+else
+  echo "[INFO] Installing Claude Code..."
+  "${PROTO_HOME}/shims/npm" install -g @anthropic-ai/claude-code || true
+fi
+
+echo "[INFO] Development tools installed"
+{{- end }}
