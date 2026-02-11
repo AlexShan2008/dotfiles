@@ -39,9 +39,8 @@ This single command will:
 - Prompt: Starship
 - Mac App Store: Xcode, Xnip
 - Editors: Cursor, Zed
-- Development: Docker, OrbStack
+- Development: OrbStack
 - Design: Figma
-- AI: ChatGPT, Claude
 - Network: Clash Verge Rev
 - Security: Bitwarden
 - Productivity: Bob

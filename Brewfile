@@ -23,9 +23,6 @@ cask "zed"
 cask "orbstack"
 cask "figma"
 
-# AI
-cask "claude"
-
 # Network
 cask "clash-verge-rev"
 
