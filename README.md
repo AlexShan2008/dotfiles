@@ -8,15 +8,11 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
 ```
 
-Pin to a specific chezmoi version:
-
-```bash
-CHEZMOI_VERSION=v2.52.0 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
-```
+> Requires [Homebrew](https://brew.sh/) to be installed first.
 
 This single command will:
 
-1. Install chezmoi
+1. Install chezmoi via Homebrew
 2. Clone this repo
 3. Prompt for machine-specific configuration (email, work/personal)
 4. Install Xcode Command Line Tools, Homebrew, and packages
