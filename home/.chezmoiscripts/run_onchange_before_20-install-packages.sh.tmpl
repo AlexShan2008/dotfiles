@@ -110,11 +110,38 @@ awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while 
     log "WARNING" "cask: ${cask} is not supported on this Mac architecture, skipping"
     continue
   fi
-  if brew list --cask "${cask}" >/dev/null 2>&1; then
+  if brew list --cask --versions "${cask}" >/dev/null 2>&1; then
     log "INFO" "cask: ${cask} already installed, skipping"
     continue
   fi
-  install_with_retry "cask" "${cask}" "brew install --cask ${cask}" || exit 1
+
+  attempt=1
+  max_attempts=2
+  while [ "${attempt}" -le "${max_attempts}" ]; do
+    log "INFO" "cask: installing ${cask} (${attempt}/${max_attempts})"
+    install_error="$(brew install --cask "${cask}" 2>&1)"
+    install_status=$?
+
+    if [ "${install_status}" -eq 0 ]; then
+      log "INFO" "cask: installed ${cask}"
+      break
+    fi
+
+    if printf '%s\n' "${install_error}" | grep -Eq "already an App at|already installed"; then
+      log "WARNING" "cask: ${cask} app already exists, skipping"
+      break
+    fi
+
+    if [ "${attempt}" -eq "${max_attempts}" ]; then
+      printf '%s\n' "${install_error}"
+      log "ERROR" "cask: failed to install ${cask}"
+      exit 1
+    fi
+
+    log "WARNING" "cask: retrying ${cask} in 3 seconds"
+    sleep 3
+    attempt=$((attempt + 1))
+  done
 done
 
 log "INFO" "Phase 3/3: App Store apps (mas)"
