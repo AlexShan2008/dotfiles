@@ -31,6 +31,20 @@ log() {
   printf '[%s] [%s] %s\n' "$(date '+%H:%M:%S')" "${level}" "${message}"
 }
 
+FAILED_ITEMS_FILE="$(mktemp "${TMPDIR:-/tmp}/chezmoi-failed-packages.XXXXXX")"
+
+cleanup() {
+  [ -f "${FAILED_ITEMS_FILE}" ] && rm -f "${FAILED_ITEMS_FILE}"
+}
+
+trap cleanup EXIT
+
+record_failure() {
+  item_type="$1"
+  item_name="$2"
+  printf '%s:%s\n' "${item_type}" "${item_name}" >> "${FAILED_ITEMS_FILE}"
+}
+
 run_with_timeout() {
   label="$1"
   timeout_seconds="$2"
@@ -98,17 +112,21 @@ awk -F'"' '/^[[:space:]]*brew[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while 
     log "INFO" "brew: ${formula} already installed, skipping"
     continue
   fi
-  install_with_retry "brew" "${formula}" "brew install ${formula}" || exit 1
+  if ! install_with_retry "brew" "${formula}" "brew install ${formula}"; then
+    record_failure "brew" "${formula}"
+  fi
 done
 
 log "INFO" "Phase 2/3: desktop apps (cask)"
 awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while IFS= read -r cask; do
   [ -z "${cask}" ] && continue
-  cask_info_error="$(brew info --cask "${cask}" 2>&1 1>/dev/null)"
-  cask_info_status=$?
-  if [ "${cask_info_status}" -ne 0 ] && printf '%s\n' "${cask_info_error}" | grep -q "depends on hardware architecture"; then
-    log "WARNING" "cask: ${cask} is not supported on this Mac architecture, skipping"
-    continue
+  if cask_info_error="$(brew info --cask "${cask}" 2>&1 1>/dev/null)"; then
+    :
+  else
+    if printf '%s\n' "${cask_info_error}" | grep -q "depends on hardware architecture"; then
+      log "WARNING" "cask: ${cask} is not supported on this Mac architecture, skipping"
+      continue
+    fi
   fi
   if brew list --cask --versions "${cask}" >/dev/null 2>&1; then
     log "INFO" "cask: ${cask} already installed, skipping"
@@ -132,7 +150,8 @@ awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while 
     if [ "${attempt}" -eq "${max_attempts}" ]; then
       printf '%s\n' "${install_error}"
       log "ERROR" "cask: failed to install ${cask}"
-      exit 1
+      record_failure "cask" "${cask}"
+      break
     fi
 
     log "WARNING" "cask: retrying ${cask} in 3 seconds"
@@ -151,7 +170,9 @@ if command -v mas >/dev/null 2>&1 && run_with_timeout "mas:account-check" 30 "ma
       log "INFO" "mas: ${mas_id} already installed, skipping"
       continue
     fi
-    install_with_retry "mas" "${mas_id}" "mas install ${mas_id}" || exit 1
+    if ! install_with_retry "mas" "${mas_id}" "mas install ${mas_id}"; then
+      record_failure "mas" "${mas_id}"
+    fi
   done
 else
   log "WARNING" "App Store account not available or check timed out; skipping MAS phase"
@@ -161,5 +182,14 @@ fi
 BREWFILE_LOCK="$(dirname "${BREWFILE}")/Brewfile.lock.json"
 [ -f "${BREWFILE_LOCK}" ] && rm -f "${BREWFILE_LOCK}"
 
-log "INFO" "Homebrew packages installed"
+if [ -s "${FAILED_ITEMS_FILE}" ]; then
+  log "WARNING" "Some packages failed to install. Continued with remaining items."
+  while IFS= read -r failed_item; do
+    [ -n "${failed_item}" ] && log "WARNING" "failed -> ${failed_item}"
+  done < "${FAILED_ITEMS_FILE}"
+else
+  log "INFO" "All packages installed successfully"
+fi
+
+log "INFO" "Homebrew package sync completed"
 {{- end }}
