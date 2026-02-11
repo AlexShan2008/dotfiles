@@ -8,17 +8,18 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
 ```
 
-> Requires [Homebrew](https://brew.sh/) to be installed first.
+> One-shot setup. On first run, a macOS dialog will appear to install Xcode Command Line Tools — click Install and wait.
 
 This single command will:
 
-1. Install chezmoi via Homebrew
-2. Clone this repo
-3. Prompt for machine-specific configuration (email, work/personal)
-4. Install Xcode Command Line Tools, Homebrew, and packages
-5. Set up Oh My Zsh with plugins
-6. Install development tools (proto, Node.js, pnpm, Rust)
-7. Apply all dotfiles to your home directory
+1. Install Xcode Command Line Tools (macOS, if missing)
+2. Install Homebrew and chezmoi
+3. Clone this repo
+4. Prompt for machine-specific configuration (email, work/personal)
+5. Install packages from Brewfile
+6. Set up Oh My Zsh with plugins
+7. Install development tools (proto, Node.js, pnpm, Rust)
+8. Apply all dotfiles to your home directory
 
 ## What's Included
 
