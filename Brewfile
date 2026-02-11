@@ -20,12 +20,10 @@ cask "cursor"
 cask "zed"
 
 # Development Tools
-cask "docker"
 cask "orbstack"
 cask "figma"
 
 # AI
-cask "chatgpt"
 cask "claude"
 
 # Network

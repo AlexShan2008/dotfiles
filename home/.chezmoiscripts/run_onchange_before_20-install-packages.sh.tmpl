@@ -104,6 +104,12 @@ done
 log "INFO" "Phase 2/3: desktop apps (cask)"
 awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while IFS= read -r cask; do
   [ -z "${cask}" ] && continue
+  cask_info_error="$(brew info --cask "${cask}" 2>&1 1>/dev/null)"
+  cask_info_status=$?
+  if [ "${cask_info_status}" -ne 0 ] && printf '%s\n' "${cask_info_error}" | grep -q "depends on hardware architecture"; then
+    log "WARNING" "cask: ${cask} is not supported on this Mac architecture, skipping"
+    continue
+  fi
   if brew list --cask "${cask}" >/dev/null 2>&1; then
     log "INFO" "cask: ${cask} already installed, skipping"
     continue
