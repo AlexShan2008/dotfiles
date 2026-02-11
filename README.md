@@ -4,39 +4,14 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 
 ## Quick Start (New Machine)
 
-Default (latest chezmoi release, macOS only):
-
 ```bash
 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
 ```
 
-Pinned version (reproducible):
+Pin to a specific chezmoi version:
 
 ```bash
 CHEZMOI_VERSION=v2.52.0 curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
-```
-
-### GitHub Connectivity (CN / Restricted Networks)
-
-The installer does not modify `/etc/hosts`. In CN, prefer a proxy:
-
-```bash
-PROXY_URL=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7891 \
-curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
-```
-
-Optional: use a GitHub download proxy (pick a trusted one):
-
-```bash
-GITHUB_PROXY=https://ghproxy.com/ \
-curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
-```
-
-If `chezmoi init` still fails due to git connectivity, set a git proxy:
-
-```bash
-git config --global http.proxy http://127.0.0.1:7890
-git config --global https.proxy http://127.0.0.1:7890
 ```
 
 This single command will:
@@ -84,7 +59,7 @@ chezmoi automatically runs setup scripts at the right time:
 | Script                 | Trigger            | Purpose                    |
 | ---------------------- | ------------------ | -------------------------- |
 | `01-install-xcode-clt` | once               | Xcode Command Line Tools   |
-| `10-install-homebrew`  | on change          | Homebrew installation      |
+| `10-install-homebrew`  | once               | Homebrew installation      |
 | `20-install-packages`  | on Brewfile change | `brew bundle`              |
 | `30-setup-ohmyzsh`     | once               | Oh My Zsh + plugins        |
 | `80-install-dev-tools` | once               | proto, Node.js, pnpm, Rust |
