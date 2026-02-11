@@ -68,10 +68,21 @@ install_homebrew() {
     return
   fi
 
+  [ "$(uname -s)" != "Darwin" ] && return 0
+
   # Xcode CLT is installed by install_xcode_clt() in main()
   log "INFO" "Installing Homebrew (official installer)..."
-  # NONINTERACTIVE=1: skip prompts for automation
-  # See: https://docs.brew.sh/Installation#unattended-installation
+  
+  # Pre-authenticate sudo to avoid NONINTERACTIVE=1 blocking password prompt
+  # This caches credentials for ~5 minutes
+  log "INFO" "Administrator access required. Please enter your password:"
+  if ! sudo -v </dev/tty; then
+    log "ERROR" "Failed to authenticate. You must be an Administrator to install Homebrew."
+    log "INFO" "Alternative: Ask an admin to run: sudo dseditgroup -o edit -a ${USER} -t user admin"
+    exit 1
+  fi
+  
+  # Now run installer with NONINTERACTIVE=1 (sudo credentials are cached)
   NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
   ensure_brew_in_path
