@@ -18,77 +18,118 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 BREWFILE="{{ .chezmoi.sourceDir }}/../Brewfile"
+PACKAGE_TIMEOUT_SECONDS=1800
 
 if [ ! -f "${BREWFILE}" ]; then
   echo "[WARNING] Brewfile not found at ${BREWFILE}"
   exit 0
 fi
 
-echo "[INFO] Installing packages from Brewfile..."
+log() {
+  level="$1"
+  message="$2"
+  printf '[%s] [%s] %s\n' "$(date '+%H:%M:%S')" "${level}" "${message}"
+}
+
+run_with_timeout() {
+  label="$1"
+  timeout_seconds="$2"
+  command_to_run="$3"
+
+  sh -c "${command_to_run}" &
+  cmd_pid=$!
+  elapsed=0
+
+  while kill -0 "${cmd_pid}" >/dev/null 2>&1; do
+    if [ "${elapsed}" -ge "${timeout_seconds}" ]; then
+      log "ERROR" "${label} timed out after ${timeout_seconds}s"
+      kill -TERM "${cmd_pid}" 2>/dev/null || true
+      sleep 2
+      kill -KILL "${cmd_pid}" 2>/dev/null || true
+      wait "${cmd_pid}" 2>/dev/null || true
+      return 124
+    fi
+
+    sleep 5
+    elapsed=$((elapsed + 5))
+
+    if [ $((elapsed % 30)) -eq 0 ]; then
+      log "INFO" "${label} still running (${elapsed}s elapsed)"
+    fi
+  done
+
+  wait "${cmd_pid}"
+}
+
+log "INFO" "Installing packages from Brewfile..."
 # Avoid hidden long operations during automation.
 # Upgrades can be done manually later with `brew upgrade`.
 export HOMEBREW_BUNDLE_NO_UPGRADE=1
 
-TMP_BREWFILE_DIR="$(mktemp -d)"
-CORE_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.core"
-CASK_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.cask"
-MAS_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.mas"
-trap 'rm -rf "${TMP_BREWFILE_DIR}"' EXIT
-
-# Split Brewfile into independent phases for better observability and recovery.
-awk \
-  -v core="${CORE_BREWFILE}" \
-  -v cask="${CASK_BREWFILE}" \
-  -v mas="${MAS_BREWFILE}" '
-  /^[[:space:]]*brew[[:space:]]/ { print > core; next }
-  /^[[:space:]]*cask[[:space:]]/ { print > cask; next }
-  /^[[:space:]]*mas[[:space:]]/ { print > mas; next }
-' "${BREWFILE}"
-
-run_bundle_phase() {
-  phase_name="$1"
-  phase_file="$2"
-
-  if [ ! -s "${phase_file}" ]; then
-    echo "[INFO] ${phase_name}: nothing to install, skipping"
-    return 0
-  fi
+install_with_retry() {
+  item_type="$1"
+  item_name="$2"
+  install_cmd="$3"
 
   attempt=1
   max_attempts=2
   while [ "${attempt}" -le "${max_attempts}" ]; do
-    echo "[INFO] ${phase_name}: brew bundle attempt ${attempt}/${max_attempts}..."
-    if brew bundle install --file="${phase_file}" --verbose --no-upgrade; then
-      echo "[INFO] ${phase_name}: completed"
+    log "INFO" "${item_type}: installing ${item_name} (${attempt}/${max_attempts})"
+    if run_with_timeout "${item_type}:${item_name}" "${PACKAGE_TIMEOUT_SECONDS}" "${install_cmd}"; then
+      log "INFO" "${item_type}: installed ${item_name}"
       return 0
     fi
 
     if [ "${attempt}" -eq "${max_attempts}" ]; then
-      echo "[ERROR] ${phase_name}: failed after ${max_attempts} attempts"
+      log "ERROR" "${item_type}: failed to install ${item_name}"
       return 1
     fi
 
-    echo "[WARNING] ${phase_name}: retrying in 3 seconds..."
+    log "WARNING" "${item_type}: retrying ${item_name} in 3 seconds"
     sleep 3
     attempt=$((attempt + 1))
   done
 }
 
-run_bundle_phase "core packages (brew)" "${CORE_BREWFILE}"
-run_bundle_phase "desktop apps (cask)" "${CASK_BREWFILE}"
-
-# App Store installs can block if account is not signed in.
-if [ -s "${MAS_BREWFILE}" ]; then
-  if command -v mas >/dev/null 2>&1 && mas account >/dev/null 2>&1; then
-    run_bundle_phase "App Store apps (mas)" "${MAS_BREWFILE}"
-  else
-    echo "[WARNING] App Store account not available; skipping MAS phase"
+log "INFO" "Phase 1/3: core packages (brew)"
+awk -F'"' '/^[[:space:]]*brew[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while IFS= read -r formula; do
+  [ -z "${formula}" ] && continue
+  if brew list --formula "${formula}" >/dev/null 2>&1; then
+    log "INFO" "brew: ${formula} already installed, skipping"
+    continue
   fi
+  install_with_retry "brew" "${formula}" "brew install ${formula}" || exit 1
+done
+
+log "INFO" "Phase 2/3: desktop apps (cask)"
+awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while IFS= read -r cask; do
+  [ -z "${cask}" ] && continue
+  if brew list --cask "${cask}" >/dev/null 2>&1; then
+    log "INFO" "cask: ${cask} already installed, skipping"
+    continue
+  fi
+  install_with_retry "cask" "${cask}" "brew install --cask ${cask}" || exit 1
+done
+
+log "INFO" "Phase 3/3: App Store apps (mas)"
+if command -v mas >/dev/null 2>&1 && run_with_timeout "mas:account-check" 30 "mas account >/dev/null 2>&1"; then
+  awk '/^[[:space:]]*mas[[:space:]]+"/ { print }' "${BREWFILE}" | while IFS= read -r mas_line; do
+    mas_id="$(printf '%s\n' "${mas_line}" | sed -n 's/.*id:[[:space:]]*\([0-9][0-9]*\).*/\1/p')"
+    [ -z "${mas_id}" ] && continue
+
+    if run_with_timeout "mas:list-check:${mas_id}" 60 "mas list | awk '{print \$1}' | grep -qx '${mas_id}'"; then
+      log "INFO" "mas: ${mas_id} already installed, skipping"
+      continue
+    fi
+    install_with_retry "mas" "${mas_id}" "mas install ${mas_id}" || exit 1
+  done
+else
+  log "WARNING" "App Store account not available or check timed out; skipping MAS phase"
 fi
 
 # Clean up lock file if generated (optional)
 BREWFILE_LOCK="$(dirname "${BREWFILE}")/Brewfile.lock.json"
 [ -f "${BREWFILE_LOCK}" ] && rm -f "${BREWFILE_LOCK}"
 
-echo "[INFO] Homebrew packages installed"
+log "INFO" "Homebrew packages installed"
 {{- end }}
