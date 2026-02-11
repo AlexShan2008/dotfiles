@@ -119,10 +119,7 @@ awk -F'"' '/^[[:space:]]*cask[[:space:]]+"/ { print $2 }' "${BREWFILE}" | while 
   max_attempts=2
   while [ "${attempt}" -le "${max_attempts}" ]; do
     log "INFO" "cask: installing ${cask} (${attempt}/${max_attempts})"
-    install_error="$(brew install --cask "${cask}" 2>&1)"
-    install_status=$?
-
-    if [ "${install_status}" -eq 0 ]; then
+    if install_error="$(brew install --cask "${cask}" 2>&1)"; then
       log "INFO" "cask: installed ${cask}"
       break
     fi
