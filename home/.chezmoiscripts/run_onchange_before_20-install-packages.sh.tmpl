@@ -6,6 +6,10 @@
 
 set -e
 
+# Configure Homebrew environment for automation
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_INSTALL_CLEANUP=1
+
 eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
 
 if ! command -v brew >/dev/null 2>&1; then
@@ -21,7 +25,66 @@ if [ ! -f "${BREWFILE}" ]; then
 fi
 
 echo "[INFO] Installing packages from Brewfile..."
-brew bundle --file="${BREWFILE}"
+# Avoid hidden long operations during automation.
+# Upgrades can be done manually later with `brew upgrade`.
+export HOMEBREW_BUNDLE_NO_UPGRADE=1
+
+TMP_BREWFILE_DIR="$(mktemp -d)"
+CORE_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.core"
+CASK_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.cask"
+MAS_BREWFILE="${TMP_BREWFILE_DIR}/Brewfile.mas"
+trap 'rm -rf "${TMP_BREWFILE_DIR}"' EXIT
+
+# Split Brewfile into independent phases for better observability and recovery.
+awk \
+  -v core="${CORE_BREWFILE}" \
+  -v cask="${CASK_BREWFILE}" \
+  -v mas="${MAS_BREWFILE}" '
+  /^[[:space:]]*brew[[:space:]]/ { print > core; next }
+  /^[[:space:]]*cask[[:space:]]/ { print > cask; next }
+  /^[[:space:]]*mas[[:space:]]/ { print > mas; next }
+' "${BREWFILE}"
+
+run_bundle_phase() {
+  phase_name="$1"
+  phase_file="$2"
+
+  if [ ! -s "${phase_file}" ]; then
+    echo "[INFO] ${phase_name}: nothing to install, skipping"
+    return 0
+  fi
+
+  attempt=1
+  max_attempts=2
+  while [ "${attempt}" -le "${max_attempts}" ]; do
+    echo "[INFO] ${phase_name}: brew bundle attempt ${attempt}/${max_attempts}..."
+    if brew bundle install --file="${phase_file}" --verbose --no-upgrade; then
+      echo "[INFO] ${phase_name}: completed"
+      return 0
+    fi
+
+    if [ "${attempt}" -eq "${max_attempts}" ]; then
+      echo "[ERROR] ${phase_name}: failed after ${max_attempts} attempts"
+      return 1
+    fi
+
+    echo "[WARNING] ${phase_name}: retrying in 3 seconds..."
+    sleep 3
+    attempt=$((attempt + 1))
+  done
+}
+
+run_bundle_phase "core packages (brew)" "${CORE_BREWFILE}"
+run_bundle_phase "desktop apps (cask)" "${CASK_BREWFILE}"
+
+# App Store installs can block if account is not signed in.
+if [ -s "${MAS_BREWFILE}" ]; then
+  if command -v mas >/dev/null 2>&1 && mas account >/dev/null 2>&1; then
+    run_bundle_phase "App Store apps (mas)" "${MAS_BREWFILE}"
+  else
+    echo "[WARNING] App Store account not available; skipping MAS phase"
+  fi
+fi
 
 # Clean up lock file if generated (optional)
 BREWFILE_LOCK="$(dirname "${BREWFILE}")/Brewfile.lock.json"
