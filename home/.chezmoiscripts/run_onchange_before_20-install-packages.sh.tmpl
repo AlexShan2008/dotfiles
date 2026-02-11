@@ -21,6 +21,11 @@ if [ ! -f "${BREWFILE}" ]; then
 fi
 
 echo "[INFO] Installing packages from Brewfile..."
-brew bundle --no-lock --file="${BREWFILE}"
+brew bundle --file="${BREWFILE}"
+
+# Clean up lock file if generated (optional)
+BREWFILE_LOCK="$(dirname "${BREWFILE}")/Brewfile.lock.json"
+[ -f "${BREWFILE_LOCK}" ] && rm -f "${BREWFILE_LOCK}"
+
 echo "[INFO] Homebrew packages installed"
 {{- end }}
