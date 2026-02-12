@@ -29,19 +29,51 @@ install_xcode_clt() {
 
   log "INFO" "Installing Xcode Command Line Tools (required by Homebrew)..."
   log "INFO" "A dialog will appear - click 'Install' and wait for it to complete."
-  xcode-select --install
 
-  # Poll until installation completes (timeout 15 minutes)
-  max_wait=900
+  # xcode-select --install can return non-zero for valid states such as
+  # "already installed" or "install request submitted". Do not fail fast here.
+  install_output="$(xcode-select --install 2>&1 || true)"
+  case "$install_output" in
+    *"already installed"*|*"already been installed"*)
+      log "INFO" "Xcode Command Line Tools already installed, skipping"
+      return
+      ;;
+    *"on software update server"*|*"Install requested"*)
+      log "INFO" "Install request submitted successfully"
+      ;;
+    "")
+      # No output is acceptable; continue to wait for completion.
+      ;;
+    *)
+      log "INFO" "xcode-select --install output: $install_output"
+      ;;
+  esac
+
+  # Bring installer window to front when available, but never fail on this.
+  if command -v osascript >/dev/null 2>&1; then
+    (
+      sleep 1
+      osascript -e 'tell application "Install Command Line Developer Tools" to activate' >/dev/null 2>&1 || true
+    ) &
+  fi
+
+  # Poll until installation completes (timeout 30 minutes)
+  max_wait=1800
   waited=0
   until xcode-select -p >/dev/null 2>&1; do
     if [ "$waited" -ge "$max_wait" ]; then
       log "ERROR" "Timed out waiting for Xcode CLT. Complete the installation and re-run this script."
       exit 1
     fi
+
+    if [ $((waited % 60)) -eq 0 ]; then
+      log "INFO" "Waiting for Xcode CLT installation to finish... (${waited}s elapsed)"
+    fi
+
     sleep 5
     waited=$((waited + 5))
   done
+
   log "INFO" "Xcode Command Line Tools installed"
 }
 
