@@ -3,9 +3,23 @@
 # Configure macOS system preferences via defaults write.
 # Re-runs automatically when this script is modified.
 
-set -euo pipefail
+set -uo pipefail
+
+# Do NOT use "set -e" here — individual `defaults write` commands may fail
+# for legitimate reasons (sandboxed app containers, SIP-protected domains,
+# or keys removed in newer macOS versions) and must not abort the script.
 
 echo "[INFO] Configuring macOS defaults..."
+
+# Helper: run a command, log a warning with the original error on failure,
+# then continue to the next command.
+try_defaults() {
+  local err
+  if ! err=$("$@" 2>&1); then
+    echo "[WARN] Failed: $*"
+    [ -n "$err" ] && echo "        -> $err"
+  fi
+}
 
 # macOS version (e.g., 14.2.1)
 MACOS_VERSION="$(sw_vers -productVersion)"
@@ -27,62 +41,62 @@ sleep 1
 # Keyboard
 # ---------------------------------------------------------------------------
 # Fast key repeat rate (lower = faster, default is 6)
-defaults write NSGlobalDomain KeyRepeat -int 2
-defaults write NSGlobalDomain InitialKeyRepeat -int 25
+try_defaults defaults write NSGlobalDomain KeyRepeat -int 2
+try_defaults defaults write NSGlobalDomain InitialKeyRepeat -int 25
 # Rollback:
 # defaults delete NSGlobalDomain KeyRepeat
 # defaults delete NSGlobalDomain InitialKeyRepeat
 # Disable press-and-hold for accent characters, enable key repeat
-defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+try_defaults defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 # Rollback:
 # defaults delete NSGlobalDomain ApplePressAndHoldEnabled
 # Use per-app input source (each app remembers its own input method)
-defaults write com.apple.HIToolbox AppleGlobalTextInputProperties -dict TextInputGlobalPropertyPerContextInput 1
+try_defaults defaults write com.apple.HIToolbox AppleGlobalTextInputProperties -dict TextInputGlobalPropertyPerContextInput 1
 
 # ---------------------------------------------------------------------------
 # Trackpad
 # ---------------------------------------------------------------------------
 # Enable tap to click
-defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
-defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+try_defaults defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+try_defaults defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+try_defaults defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 
 # ---------------------------------------------------------------------------
 # Mouse
 # ---------------------------------------------------------------------------
-defaults write NSGlobalDomain com.apple.mouse.scaling -float 1
+try_defaults defaults write NSGlobalDomain com.apple.mouse.scaling -float 1
 
 # ---------------------------------------------------------------------------
 # Sound
 # ---------------------------------------------------------------------------
 # Play feedback sound when volume is changed
-defaults write NSGlobalDomain com.apple.sound.beep.feedback -int 1
+try_defaults defaults write NSGlobalDomain com.apple.sound.beep.feedback -int 1
 
 # ---------------------------------------------------------------------------
 # Appearance
 # ---------------------------------------------------------------------------
 # Follow system (auto)
-defaults write NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically -bool true
+try_defaults defaults write NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically -bool true
 defaults delete NSGlobalDomain AppleInterfaceStyle 2>/dev/null || true
 # Rollback:
 # defaults delete NSGlobalDomain AppleInterfaceStyleSwitchesAutomatically
 # defaults delete NSGlobalDomain AppleInterfaceStyle
 # Always show scroll bars
-defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
+try_defaults defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 
 # ---------------------------------------------------------------------------
 # Dock
 # ---------------------------------------------------------------------------
 # Auto-hide the Dock
-defaults write com.apple.dock autohide -bool true
+try_defaults defaults write com.apple.dock autohide -bool true
 # Set icon size to 46 pixels
-defaults write com.apple.dock tilesize -int 46
+try_defaults defaults write com.apple.dock tilesize -int 46
 # Enable magnification
-defaults write com.apple.dock magnification -bool true
+try_defaults defaults write com.apple.dock magnification -bool true
 # Use scale effect for minimizing
-defaults write com.apple.dock mineffect -string "scale"
+try_defaults defaults write com.apple.dock mineffect -string "scale"
 # Don't show recent apps
-defaults write com.apple.dock show-recents -bool false
+try_defaults defaults write com.apple.dock show-recents -bool false
 # Rollback:
 # defaults delete com.apple.dock autohide
 # defaults delete com.apple.dock tilesize
@@ -94,27 +108,27 @@ defaults write com.apple.dock show-recents -bool false
 # Finder
 # ---------------------------------------------------------------------------
 # Show status bar
-defaults write com.apple.finder ShowStatusBar -bool true
+try_defaults defaults write com.apple.finder ShowStatusBar -bool true
 # Show path bar
-defaults write com.apple.finder ShowPathbar -bool true
+try_defaults defaults write com.apple.finder ShowPathbar -bool true
 # Show all filename extensions
-defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+try_defaults defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 # Keep folders on top when sorting by name
-defaults write com.apple.finder _FXSortFoldersFirst -bool true
+try_defaults defaults write com.apple.finder _FXSortFoldersFirst -bool true
 # Search the current folder by default
-defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+try_defaults defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 # Disable the warning when changing a file extension
-defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+try_defaults defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 # Avoid creating .DS_Store files on network or USB volumes
-defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
-defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+try_defaults defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+try_defaults defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
 
 # ---------------------------------------------------------------------------
 # Window Manager
 # ---------------------------------------------------------------------------
 # Don't show desktop when clicking wallpaper
 if version_ge "$MACOS_VERSION" "13.0"; then
-  defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+  try_defaults defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
   # Rollback:
   # defaults delete com.apple.WindowManager EnableStandardClickToShowDesktop
 else
@@ -125,29 +139,29 @@ fi
 # Text input & autocorrect
 # ---------------------------------------------------------------------------
 # Disable automatic spelling correction
-defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
-defaults write NSGlobalDomain WebAutomaticSpellingCorrectionEnabled -bool false
+try_defaults defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+try_defaults defaults write NSGlobalDomain WebAutomaticSpellingCorrectionEnabled -bool false
 # Disable smart dash and quote substitution
-defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
-defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+try_defaults defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+try_defaults defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 
 # ---------------------------------------------------------------------------
 # Save & print dialogs
 # ---------------------------------------------------------------------------
 # Save to disk (not iCloud) by default
-defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+try_defaults defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 # Expand save panel by default
-defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
-defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+try_defaults defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+try_defaults defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
 # Expand print panel by default
-defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+try_defaults defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 
 # ---------------------------------------------------------------------------
 # Menu bar
 # ---------------------------------------------------------------------------
 # Hide AirPlay icon in menu bar
 if version_ge "$MACOS_VERSION" "12.0"; then
-  defaults write com.apple.airplay showInMenuBarIfPresent -bool false
+  try_defaults defaults write com.apple.airplay showInMenuBarIfPresent -bool false
   # Rollback:
   # defaults delete com.apple.airplay showInMenuBarIfPresent
 else
@@ -158,16 +172,17 @@ fi
 # Login & session
 # ---------------------------------------------------------------------------
 # Don't reopen windows on login
-defaults write com.apple.loginwindow TALLogoutSavesState -bool false
+try_defaults defaults write com.apple.loginwindow TALLogoutSavesState -bool false
 
 # ---------------------------------------------------------------------------
-# Safari (developer settings)
+# Safari — intentionally skipped
 # ---------------------------------------------------------------------------
-# Enable the Develop menu and Web Inspector
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
-defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+# Since Safari 13, preferences live in a sandboxed container:
+#   ~/Library/Containers/com.apple.Safari/Data/Library/Preferences/
+# Writing to com.apple.Safari requires granting Terminal "Full Disk Access"
+# (System Settings > Privacy & Security > Full Disk Access), which an
+# automated bootstrap script cannot assume. Enable the Develop menu manually:
+#   Safari > Settings > Advanced > "Show features for web developers"
 
 # ---------------------------------------------------------------------------
 # Activate settings & restart affected services
