@@ -34,15 +34,14 @@ This single command will:
 
 ### Packages (Brewfile)
 
-- CLI: git, git-lfs, zsh, zoxide, difftastic, eza, mas
+- CLI: git, git-lfs, awscli, vercel-cli, zsh, zoxide, difftastic, eza, mas
 - Terminal: Ghostty
 - Prompt: Starship
-- Mac App Store: Xcode, Xnip
-- Editors: Cursor, Zed
+- Mac App Store: Xcode, Xnip, Bitwarden
+- Editors: Cursor, Zed, Sublime Merge
 - Development: OrbStack
 - Design: Figma
 - Network: Clash Verge Rev
-- Security: Bitwarden
 - Productivity: Bob
 - Communication: Slack, Zoom, Telegram
 - Browsers: Chrome
@@ -56,7 +55,7 @@ chezmoi automatically runs setup scripts at the right time:
 | ---------------------- | ------------------ | -------------------------- |
 | `01-install-xcode-clt` | once               | Xcode Command Line Tools   |
 | `10-install-homebrew`  | once               | Homebrew installation      |
-| `20-install-packages`  | on Brewfile change | `brew bundle`              |
+| `20-install-packages`  | on Brewfile change | phased brew/cask/mas sync  |
 | `30-setup-ohmyzsh`     | once               | Oh My Zsh + plugins        |
 | `80-install-dev-tools` | once               | proto, Node.js, pnpm, Rust |
 | `90-configure-macos`   | on change          | macOS system preferences   |
