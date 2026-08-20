@@ -1,5 +1,5 @@
 [user]
-  email = git@alexshan.com
+  email = {{ .email | quote }}
   name = Alex
 
 [alias]
@@ -60,21 +60,14 @@
   smudge = cat
   required = true
 
-[filter "signingkey"]
-  clean = sed -e '/^[[:space:]]*signingkey[[:space:]]*=/d'
-  smudge = cat
-  required = true
-
-[filter "user.config"]
-  clean = sed -E '/^[[:space:]]*(email|name|signingkey)[[:space:]]*=/d'
-  smudge = cat
-  required = true
-
 [includeIf "gitdir:~/Code/GitHub/"]
   path = github.config
 
+{{- if eq .is_work "true" }}
 [includeIf "gitdir:~/Code/GitLab/"]
   path = gitlab.config
+  path = gitlab.local.config
+{{- end }}
 
 [includeIf "gitdir:~/Code/"]
   path = fsmonitor.config

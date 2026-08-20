@@ -1,3 +1,1 @@
 .prototools filter=prototools
-github.config filter=user.config
-gitlab.config filter=user.config

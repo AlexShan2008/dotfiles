@@ -21,3 +21,6 @@ npm-debug.log*
 *.temp
 *.bak
 .history/
+
+# Claude Code machine-specific settings
+**/.claude/settings.local.json

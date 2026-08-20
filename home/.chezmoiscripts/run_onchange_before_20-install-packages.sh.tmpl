@@ -3,6 +3,11 @@
 # Install Homebrew packages from Brewfile
 # Re-runs when Brewfile content changes
 # Brewfile hash: {{ include "../Brewfile" | sha256sum }}
+#
+# Note: `brew bundle` is intentionally NOT used. It aborts the whole run when
+# one item fails and offers no per-package timeout. Items are installed
+# individually instead, so one hung or failed install does not block the rest
+# (failures are collected and reported at the end).
 
 set -e
 
@@ -76,9 +81,6 @@ run_with_timeout() {
 }
 
 log "INFO" "Installing packages from Brewfile..."
-# Avoid hidden long operations during automation.
-# Upgrades can be done manually later with `brew upgrade`.
-export HOMEBREW_BUNDLE_NO_UPGRADE=1
 
 install_with_retry() {
   item_type="$1"
@@ -177,10 +179,6 @@ if command -v mas >/dev/null 2>&1 && run_with_timeout "mas:account-check" 30 "ma
 else
   log "WARNING" "App Store account not available or check timed out; skipping MAS phase"
 fi
-
-# Clean up lock file if generated (optional)
-BREWFILE_LOCK="$(dirname "${BREWFILE}")/Brewfile.lock.json"
-[ -f "${BREWFILE_LOCK}" ] && rm -f "${BREWFILE_LOCK}"
 
 if [ -s "${FAILED_ITEMS_FILE}" ]; then
   log "WARNING" "Some packages failed to install. Continued with remaining items."

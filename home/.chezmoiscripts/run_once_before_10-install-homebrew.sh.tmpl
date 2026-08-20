@@ -1,16 +1,49 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/bin/sh
-# Install Homebrew (macOS only, skip if already installed)
+# Install Homebrew (macOS only, run once)
 
 set -e
 
+log() {
+  printf '[%s] %s\n' "$1" "$2"
+}
+
+ensure_brew_in_path() {
+  if command -v brew >/dev/null 2>&1; then
+    return
+  fi
+  # Apple Silicon: /opt/homebrew, Intel: /usr/local
+  if [ -f /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -f /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+}
+
+ensure_brew_in_path
 if command -v brew >/dev/null 2>&1; then
-  echo "[INFO] Homebrew already installed"
-else
-  echo "[INFO] Installing Homebrew..."
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  log "INFO" "Homebrew already installed, skipping"
+  exit 0
 fi
 
-# Ensure brew is on PATH for subsequent scripts
-eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+log "INFO" "Installing Homebrew (official installer)..."
+# Pre-authenticate sudo to avoid NONINTERACTIVE=1 blocking password prompt
+# This caches credentials for ~5 minutes
+log "INFO" "Administrator access required. Please enter your password:"
+# shellcheck disable=SC2024 # read the password from the terminal, not the pipe
+if ! sudo -v </dev/tty; then
+  log "ERROR" "Failed to authenticate. You must be an Administrator to install Homebrew."
+  log "INFO" "Alternative: Ask an admin to run: sudo dseditgroup -o edit -a ${USER} -t user admin"
+  exit 1
+fi
+
+# Now run installer with NONINTERACTIVE=1 (sudo credentials are cached)
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+ensure_brew_in_path
+if ! command -v brew >/dev/null 2>&1; then
+  log "ERROR" "Homebrew install may have completed but brew not in PATH. Restart terminal and re-run chezmoi apply."
+  exit 1
+fi
+log "INFO" "Homebrew installed successfully"
 {{- end }}

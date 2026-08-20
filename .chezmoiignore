@@ -1,5 +1,6 @@
 # Local machine-specific files that should not be managed by chezmoi
 .zshrc.local
+.config/git/gitlab.local.config
 
 # Backup files
 *.backup

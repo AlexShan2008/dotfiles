@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y shellcheck zsh
+
+      - name: ShellCheck install.sh
+        run: shellcheck install.sh
+
+      - name: ShellCheck chezmoi scripts
+        run: |
+          set -e
+          for f in home/.chezmoiscripts/*.tmpl; do
+            body="$(sed '/^{{/d' "$f")"
+            shell="sh"
+            if printf '%s\n' "$body" | head -n1 | grep -q "#!/bin/bash"; then
+              shell="bash"
+            fi
+            printf '%s\n' "$body" | shellcheck -s "$shell" -
+          done
+
+      - name: zsh syntax check
+        run: zsh -n home/dot_zshrc
+
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+
+      - name: Seed prompt data (CI answers for .chezmoi.toml.tmpl)
+        run: |
+          mkdir -p "$HOME/.config/chezmoi"
+          printf '[data]\n  email = "ci@example.com"\n  is_work = "false"\n' > "$HOME/.config/chezmoi/chezmoi.toml"
+
+      - name: chezmoi apply and verify
+        run: |
+          "$HOME/.local/bin/chezmoi" init --apply --source "$GITHUB_WORKSPACE"
+          "$HOME/.local/bin/chezmoi" verify

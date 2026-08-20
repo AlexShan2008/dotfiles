@@ -2,9 +2,14 @@
 
 # Zsh Configuration
 COMPLETION_WAITING_DOTS="true"
-DISABLE_UNTRACKED_FILES_DIRTY="true"
-ENABLE_CORRECTION="true"
-HIST_STAMPS="yyyy-mm-dd"
+
+# HOMEBREW_PREFIX is normally set in ~/.zprofile (login shells only);
+# derive it here so non-login shells get the same environment.
+if [[ -z "$HOMEBREW_PREFIX" ]]; then
+  for brew_dir in /opt/homebrew /usr/local; do
+    [[ -x "$brew_dir/bin/brew" ]] && eval "$("$brew_dir/bin/brew" shellenv)" && break
+  done
+fi
 
 # Homebrew zsh completion path
 __ALEX_HOMEBREW_ZSH_COMPLETION="${HOMEBREW_PREFIX}/share/zsh/site-functions"
@@ -63,8 +68,8 @@ local -a path_dirs=(
   "$HOME/.local/bin"
   "$GPG_PATH/bin"
   "$GPG_PATH/libexec"
-  "/usr/local/opt/icu4c/bin"
-  "/usr/local/opt/icu4c/sbin"
+  "$HOMEBREW_PREFIX/opt/icu4c/bin"
+  "$HOMEBREW_PREFIX/opt/icu4c/sbin"
 )
 
 # Add Ruby PATH if available
@@ -198,7 +203,9 @@ setup_editor_links() {
   for file in "settings.json" "keybindings.json"; do
     [[ ! -f "$editor_settings_path/$file" ]] && continue
     if [[ -f "$cursor_path/$file" && ! -L "$cursor_path/$file" ]]; then
-      mv "$cursor_path/$file" "$cursor_path/$file.backup"
+      # Cursor replaces the symlink with a regular file on save; preserve its
+      # edits under a timestamped name before re-linking.
+      mv "$cursor_path/$file" "$cursor_path/$file.backup.$(date +%Y%m%d%H%M%S)"
     fi
     ln -sf "$editor_settings_path/$file" "$cursor_path/$file"
   done

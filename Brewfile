@@ -9,6 +9,9 @@ brew "difftastic"
 brew "eza"
 brew "mas"
 brew "starship"
+brew "direnv"
+brew "gnupg"
+brew "pinentry-mac"
 
 # Mac App Store
 mas "Xcode", id: 497799835

@@ -12,14 +12,13 @@ curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.
 
 This single command will:
 
-1. Install Xcode Command Line Tools (macOS, if missing)
-2. Install Homebrew and chezmoi
-3. Clone this repo
-4. Prompt for machine-specific configuration (email, work/personal)
-5. Install packages from Brewfile
-6. Set up Oh My Zsh with plugins
-7. Install development tools (proto, Node.js, pnpm, Rust)
-8. Apply all dotfiles to your home directory
+1. Install chezmoi (official installer, no admin rights needed)
+2. Clone this repo and prompt for machine-specific configuration (email, work machine)
+3. Install Xcode Command Line Tools (macOS dialog, if missing)
+4. Install Homebrew and packages from Brewfile
+5. Set up Oh My Zsh with plugins
+6. Install development tools (proto, Node.js, pnpm, Rust)
+7. Apply all dotfiles to your home directory
 
 ## What's Included
 
@@ -89,10 +88,22 @@ chezmoi cd
 
 On first `chezmoi init`, you'll be prompted for:
 
-- **Email**: Git email address
-- **Is Work Machine**: Toggles work vs personal settings
+- **Email**: Git email address → set as the global git identity
+- **Is Work Machine**: When `true`, loads the GitLab work config
+  (`~/Code/GitLab` repos get SSH-signed commits)
 
 Stored in `~/.config/chezmoi/chezmoi.toml`.
+
+### Work Machine Identity
+
+The work email itself stays out of this repo. On work machines, create
+`~/.config/git/gitlab.local.config` (not managed by chezmoi, safe from
+`chezmoi apply`):
+
+```ini
+[user]
+  email = you@company.com
+```
 
 ### Private Configuration
 
@@ -103,6 +114,12 @@ export ANTHROPIC_AUTH_TOKEN="your-token"
 export WORK_SPECIFIC_VAR="value"
 ```
 
+## CI
+
+GitHub Actions runs shellcheck and a zsh syntax check on every push, plus a
+full `chezmoi apply` + `chezmoi verify` dry run on Linux (macOS-only steps are
+skipped there).
+
 ## Repository Structure
 
 ```
@@ -110,7 +127,8 @@ dotfiles/
 ├── .chezmoiroot              # Points to home/
 ├── .chezmoi.toml.tmpl         # Setup prompts (email, work machine)
 ├── .chezmoiignore             # Ignore rules
-├── install.sh                 # Bootstrap script
+├── .github/workflows/ci.yml   # Lint + apply/verify CI
+├── install.sh                 # Bootstrap script (installs chezmoi only)
 ├── Brewfile                   # Homebrew packages
 ├── README.md
 ├── LICENSE
