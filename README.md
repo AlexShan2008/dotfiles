@@ -5,7 +5,7 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 ## Quick Start (New Machine)
 
 ```bash
-curl -fsLS https://raw.githubusercontent.com/AlexShan2008/dotfiles/main/install.sh | sh
+curl -fsLS https://raw.githubusercontent.com/alxshan/dotfiles/main/install.sh | sh
 ```
 
 > One-shot setup. On first run, a macOS dialog will appear to install Xcode Command Line Tools — click Install and wait.
