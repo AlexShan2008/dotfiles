@@ -64,4 +64,4 @@ jobs:
       - name: chezmoi apply and verify
         run: |
           "$HOME/.local/bin/chezmoi" init --apply --source "$GITHUB_WORKSPACE"
-          "$HOME/.local/bin/chezmoi" verify
+          "$HOME/.local/bin/chezmoi" verify --source "$GITHUB_WORKSPACE"
