@@ -22,7 +22,6 @@ mas "Bitwarden", id: 1352778147
 cask "ghostty"
 
 # Code Editors
-cask "cursor"
 cask "zed"
 cask "sublime-merge"
 

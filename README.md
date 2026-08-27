@@ -26,7 +26,7 @@ This single command will:
 
 - **Shell**: `.zshrc` with zsh plugins, zoxide, starship prompt
 - **Git**: Global config with GitHub/GitLab identity includes
-- **Editors**: Cursor settings
+- **AI Skills**: Shared personal skills with Claude compatibility links
 - **Terminal**: Ghostty config, Starship prompt
 - **Development**: Proto tools configuration
 - **SSH**: SSH client config
@@ -37,7 +37,7 @@ This single command will:
 - Terminal: Ghostty
 - Prompt: Starship
 - Mac App Store: Xcode, Xnip, Bitwarden
-- Editors: Cursor, Zed, Sublime Merge
+- Editors: Zed, Sublime Merge
 - Development: OrbStack
 - Design: Figma
 - Network: Clash Verge Rev
@@ -134,14 +134,15 @@ dotfiles/
     ├── .chezmoi.toml.tmpl     # Setup prompts (email, work machine)
     ├── .chezmoiignore         # Ignore rules
     ├── .chezmoiscripts/       # Lifecycle scripts
+    ├── dot_agents/            # Shared personal AI skills
+    ├── dot_claude/            # Claude config and skill links
     ├── dot_zshrc
     ├── private_dot_ssh/
     ├── dot_proto/
     └── dot_config/
         ├── git/
         ├── ghostty/
-        ├── starship/
-        └── editor/
+        └── starship/
 ```
 
 ## Resources

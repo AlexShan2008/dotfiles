@@ -192,25 +192,6 @@ pastefinish() {
 zstyle :bracketed-paste-magic paste-init pasteinit
 zstyle :bracketed-paste-magic paste-finish pastefinish
 
-setup_editor_links() {
-  local cursor_path="$HOME/Library/Application Support/Cursor/User"
-  local editor_settings_path="$HOME/.config/editor"
-
-  [[ ! -d "$(dirname "$cursor_path")" ]] && return
-
-  mkdir -p "$cursor_path" "$editor_settings_path"
-
-  for file in "settings.json" "keybindings.json"; do
-    [[ ! -f "$editor_settings_path/$file" ]] && continue
-    if [[ -f "$cursor_path/$file" && ! -L "$cursor_path/$file" ]]; then
-      # Cursor replaces the symlink with a regular file on save; preserve its
-      # edits under a timestamped name before re-linking.
-      mv "$cursor_path/$file" "$cursor_path/$file.backup.$(date +%Y%m%d%H%M%S)"
-    fi
-    ln -sf "$editor_settings_path/$file" "$cursor_path/$file"
-  done
-}
-
 # Autosuggestions configuration
 # https://github.com/zsh-users/zsh-autosuggestions/issues/351
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste accept-line)
@@ -223,7 +204,6 @@ ZSH_AUTOSUGGEST_MANUAL_REBIND=""
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 # Initialize tools and configurations
-(( $+commands[cursor] )) && setup_editor_links &>/dev/null
 (( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 (( $+commands[proto] )) && eval "$(proto activate zsh)"
 (( $+commands[starship] )) && eval "$(starship init zsh)"
