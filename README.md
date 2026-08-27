@@ -1,155 +1,129 @@
 # Dotfiles
 
-Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
+Personal macOS setup managed with [chezmoi](https://www.chezmoi.io/). It keeps shell, Git, SSH, applications, development tools, macOS preferences, and personal AI skills reproducible across machines.
 
-## Quick Start (New Machine)
+## 1. Install a New Mac
+
+You need macOS, an internet connection, and an administrator account for Homebrew.
 
 ```bash
 curl -fsLS https://raw.githubusercontent.com/alexshanx/dotfiles/main/install.sh | sh
 ```
 
-> One-shot setup. On first run, a macOS dialog will appear to install Xcode Command Line Tools — click Install and wait.
+During setup:
 
-This single command will:
+- Enter the Git email for this machine and choose whether it is a work machine.
+- Approve the Xcode Command Line Tools dialog if it appears.
+- Enter your administrator password if Homebrew requests it.
 
-1. Install chezmoi (official installer, no admin rights needed)
-2. Clone this repo and prompt for machine-specific configuration (email, work machine)
-3. Install Xcode Command Line Tools (macOS dialog, if missing)
-4. Install Homebrew and packages from Brewfile
-5. Set up Oh My Zsh with plugins
-6. Install development tools (proto, Node.js, pnpm, Rust)
-7. Apply all dotfiles to your home directory
-
-## What's Included
-
-### Configuration Files
-
-- **Shell**: `.zshrc` with zsh plugins, zoxide, starship prompt
-- **Git**: Global config with GitHub/GitLab identity includes
-- **AI Skills**: Shared personal skills with Claude compatibility links
-- **Terminal**: Ghostty config, Starship prompt
-- **Development**: Proto tools configuration
-- **SSH**: SSH client config
-
-### Packages (Brewfile)
-
-- CLI: git, git-lfs, awscli, vercel-cli, zsh, zoxide, difftastic, eza, mas
-- Terminal: Ghostty
-- Prompt: Starship
-- Mac App Store: Xcode, Xnip, Bitwarden
-- Editors: Zed, Sublime Merge
-- Development: OrbStack
-- Design: Figma
-- Network: Clash Verge Rev
-- Productivity: Bob
-- Communication: Slack, Zoom, Telegram
-- Browsers: Chrome
-- Fonts: Fira Code
-
-### Lifecycle Scripts
-
-chezmoi automatically runs setup scripts at the right time:
-
-| Script                 | Trigger            | Purpose                    |
-| ---------------------- | ------------------ | -------------------------- |
-| `01-install-xcode-clt` | once               | Xcode Command Line Tools   |
-| `10-install-homebrew`  | once               | Homebrew installation      |
-| `20-install-packages`  | on Brewfile change | phased brew/cask/mas sync  |
-| `30-setup-ohmyzsh`     | once               | Oh My Zsh + plugins        |
-| `80-install-dev-tools` | once               | proto, Node.js, pnpm, Rust |
-| `90-configure-macos`   | on change          | macOS system preferences   |
-| `99-final-message`     | on change          | Post-setup instructions    |
-
-## Daily Usage
+The installer handles chezmoi, Homebrew packages, shell plugins, development tools, Claude Code, managed files, and macOS preferences. When it finishes:
 
 ```bash
-# Edit a managed file
-chezmoi edit ~/.zshrc
-
-# Preview changes
-chezmoi diff
-
-# Apply changes
-chezmoi apply
-
-# Pull and apply latest from remote
-chezmoi update
-
-# See all managed files
-chezmoi managed
-
-# Go to source directory
-chezmoi cd
+exec zsh
+chezmoi status
 ```
 
-## Machine-Specific Configuration
+SSH keys, GPG keys, npm authentication, and other credentials are intentionally left for manual setup.
 
-### Prompted Values
+## 2. Sync an Existing Mac
 
-On first `chezmoi init`, you'll be prompted for:
+Pull the latest repository version and apply it:
 
-- **Email**: Git email address → set as the global git identity
-- **Is Work Machine**: When `true`, loads the GitLab work config
-  (`~/Code/GitLab` repos get SSH-signed commits)
+```bash
+chezmoi update
+```
 
-Stored in `~/.config/chezmoi/chezmoi.toml`.
+To review remote changes before applying them:
 
-### Work Machine Identity
+```bash
+chezmoi git -- pull --ff-only
+chezmoi diff
+chezmoi apply
+```
 
-The work email itself stays out of this repo. On work machines, create
-`~/.config/git/gitlab.local.config` (not managed by chezmoi, safe from
-`chezmoi apply`):
+An unrestricted apply may run lifecycle scripts. A [Brewfile](Brewfile) change, for example, triggers package installation. When only one file needs updating, apply that target directly:
+
+```bash
+chezmoi apply ~/.zshrc
+```
+
+## 3. Change and Publish Dotfiles
+
+Edit a managed file, review the generated change, and apply it locally:
+
+```bash
+chezmoi edit ~/.zshrc
+chezmoi diff ~/.zshrc
+chezmoi apply ~/.zshrc
+```
+
+Add a new file, or capture an intentional change made directly to an existing target:
+
+```bash
+chezmoi add ~/.config/example/config.toml
+chezmoi re-add ~/.zshrc
+```
+
+Commit from the source repository:
+
+```bash
+chezmoi cd
+git status
+git add -A
+git commit -m "chore: update dotfiles"
+git push
+exit
+```
+
+## 4. Keep Machine-Specific Data Local
+
+The initial Git email and work-machine choice are stored in `~/.config/chezmoi/chezmoi.toml`; inspect them with `chezmoi data`.
+
+On a work machine, create `~/.config/git/gitlab.local.config` for repositories under `~/Code/GitLab`:
 
 ```ini
 [user]
   email = you@company.com
 ```
 
-### Private Configuration
-
-Create `~/.zshrc.local` for secrets (sourced by `.zshrc`, ignored by chezmoi):
+Put secrets and machine-only environment variables in `~/.zshrc.local`. It is loaded automatically and ignored by chezmoi:
 
 ```bash
 export ANTHROPIC_AUTH_TOKEN="your-token"
 export WORK_SPECIFIC_VAR="value"
 ```
 
-## CI
+## 5. Manage Personal AI Skills
 
-GitHub Actions runs shellcheck and a zsh syntax check on every push, plus a
-full `chezmoi apply` + `chezmoi verify` dry run on Linux (macOS-only steps are
-skipped there).
+`~/.agents/skills` is the only source of truth. Claude receives one compatibility symlink per skill under `~/.claude/skills`.
 
-## Repository Structure
+To manage a newly created local skill:
 
-```
-dotfiles/
-├── .chezmoiroot              # Points to home/
-├── .github/workflows/ci.yml   # Lint + apply/verify CI
-├── install.sh                 # Bootstrap script (installs chezmoi only)
-├── Brewfile                   # Homebrew packages
-├── README.md
-├── LICENSE
-└── home/                      # chezmoi source directory
-    ├── .chezmoi.toml.tmpl     # Setup prompts (email, work machine)
-    ├── .chezmoiignore         # Ignore rules
-    ├── .chezmoiscripts/       # Lifecycle scripts
-    ├── dot_agents/            # Shared personal AI skills
-    ├── dot_claude/            # Claude config and skill links
-    ├── dot_zshrc
-    ├── private_dot_ssh/
-    ├── dot_proto/
-    └── dot_config/
-        ├── git/
-        ├── ghostty/
-        └── starship/
+```bash
+chezmoi add ~/.agents/skills/<skill-name>
+ln -s ../../.agents/skills/<skill-name> ~/.claude/skills/<skill-name>
+chezmoi add ~/.claude/skills/<skill-name>
 ```
 
-## Resources
+Restart the relevant AI tool after adding or renaming a skill.
 
-- [chezmoi documentation](https://www.chezmoi.io/)
-- [chezmoi user guide](https://www.chezmoi.io/user-guide/setup/)
+## 6. Resolve Local Changes
 
-## License
+When chezmoi reports that a destination changed since it was last written:
 
-MIT License - See [LICENSE](LICENSE) file for details.
+1. Inspect it with `chezmoi diff <path>`.
+2. Keep the local version with `chezmoi re-add <path>`, or restore the managed version with `chezmoi apply <path>`.
+3. Use `chezmoi apply --force <path>` only after reviewing that specific target; avoid forcing the entire repository.
+
+## Repository Map
+
+| Path | Purpose |
+| --- | --- |
+| [install.sh](install.sh) | New-machine entry point |
+| [Brewfile](Brewfile) | Homebrew packages and applications |
+| [home](home) | Files mapped into the home directory |
+| [home/.chezmoiscripts](home/.chezmoiscripts) | Bootstrap and lifecycle automation |
+
+Useful inspection commands: `chezmoi status`, `chezmoi diff`, `chezmoi managed`, `chezmoi data`, and `chezmoi cd`.
+
+GitHub Actions checks shell scripts, Zsh syntax, and a Linux apply/verify dry-run. Licensed under the [MIT License](LICENSE).
