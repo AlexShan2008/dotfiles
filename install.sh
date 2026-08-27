@@ -2,7 +2,7 @@
 # Bootstrap script for dotfiles
 #
 # Usage:
-#   curl -fsLS https://raw.githubusercontent.com/alxshan/dotfiles/main/install.sh | sh
+#   curl -fsLS https://raw.githubusercontent.com/alexshanx/dotfiles/main/install.sh | sh
 #
 # Installs chezmoi (the only prerequisite), then runs `chezmoi init --apply`.
 # Everything else (Xcode CLT, Homebrew, packages, dev tools) is handled by the
@@ -11,7 +11,7 @@
 
 set -e
 
-GITHUB_USER="alxshan"
+GITHUB_USER="alexshanx"
 CHEZMOI_BIN="${HOME}/.local/bin/chezmoi"
 
 log() {
