@@ -59,7 +59,7 @@ jobs:
       - name: Seed prompt data (CI answers for .chezmoi.toml.tmpl)
         run: |
           mkdir -p "$HOME/.config/chezmoi"
-          printf '[data]\n  email = "ci@example.com"\n  is_work = "false"\n' > "$HOME/.config/chezmoi/chezmoi.toml"
+          printf '[data]\n  email = "ci@example.com"\n  is_work = false\n' > "$HOME/.config/chezmoi/chezmoi.toml"
 
       - name: chezmoi apply and verify
         run: |

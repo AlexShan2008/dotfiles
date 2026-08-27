@@ -125,14 +125,14 @@ skipped there).
 ```
 dotfiles/
 ├── .chezmoiroot              # Points to home/
-├── .chezmoi.toml.tmpl         # Setup prompts (email, work machine)
-├── .chezmoiignore             # Ignore rules
 ├── .github/workflows/ci.yml   # Lint + apply/verify CI
 ├── install.sh                 # Bootstrap script (installs chezmoi only)
 ├── Brewfile                   # Homebrew packages
 ├── README.md
 ├── LICENSE
 └── home/                      # chezmoi source directory
+    ├── .chezmoi.toml.tmpl     # Setup prompts (email, work machine)
+    ├── .chezmoiignore         # Ignore rules
     ├── .chezmoiscripts/       # Lifecycle scripts
     ├── dot_zshrc
     ├── private_dot_ssh/

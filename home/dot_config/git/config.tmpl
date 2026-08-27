@@ -63,7 +63,7 @@
 [includeIf "gitdir:~/Code/GitHub/"]
   path = github.config
 
-{{- if eq .is_work "true" }}
+{{- if .is_work }}
 [includeIf "gitdir:~/Code/GitLab/"]
   path = gitlab.config
   path = gitlab.local.config
