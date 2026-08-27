@@ -12,7 +12,6 @@
 set -e
 
 GITHUB_USER="alexshanx"
-CHEZMOI_BIN="${HOME}/.local/bin/chezmoi"
 
 log() {
   printf '[%s] %s\n' "$1" "$2"
@@ -22,8 +21,10 @@ main() {
   log "INFO" "Bootstrapping dotfiles for ${GITHUB_USER}..."
 
   if command -v chezmoi >/dev/null 2>&1; then
+    CHEZMOI_BIN="$(command -v chezmoi)"
     log "INFO" "chezmoi already installed, skipping"
   else
+    CHEZMOI_BIN="${HOME}/.local/bin/chezmoi"
     log "INFO" "Installing chezmoi (official installer)..."
     mkdir -p "${HOME}/.local/bin"
     sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${HOME}/.local/bin"
