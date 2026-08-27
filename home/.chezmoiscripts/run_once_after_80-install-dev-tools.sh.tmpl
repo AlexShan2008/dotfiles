@@ -1,6 +1,6 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/bin/sh
-# Install development tools: proto, Node.js, pnpm, Rust (run once)
+# Install development tools: proto, Node.js, pnpm, uv, Rust (run once)
 
 set -e
 
@@ -17,13 +17,16 @@ fi
 export PROTO_HOME="${HOME}/.proto"
 export PATH="${PROTO_HOME}/shims:${PROTO_HOME}/bin:${PATH}"
 
-# Install Node.js and pnpm via proto
+# Install Node.js, pnpm, and uv via proto
 if command -v proto >/dev/null 2>&1; then
   echo "[INFO] Installing Node.js via proto..."
   proto install node || true
 
   echo "[INFO] Installing pnpm via proto..."
   proto install pnpm || true
+
+  echo "[INFO] Installing uv via proto..."
+  proto install uv || true
 fi
 
 # Install Rust

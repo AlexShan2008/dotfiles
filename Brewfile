@@ -1,9 +1,9 @@
 # CLI Tools
 brew "git"
 brew "git-lfs"
+brew "gh"
 brew "awscli"
-brew "vercel-cli"
-brew "zsh"
+brew "vercel"
 brew "zoxide"
 brew "difftastic"
 brew "eza"
@@ -17,23 +17,28 @@ brew "pinentry-mac"
 mas "Xcode", id: 497799835
 mas "Xnip", id: 1221250572
 mas "Bitwarden", id: 1352778147
+mas "Bob", id: 1630034110
+mas "Apple Developer", id: 640199958
 
 # Terminal
 cask "ghostty"
 
 # Code Editors
+cask "visual-studio-code"
 cask "zed"
 cask "sublime-merge"
 
 # Development Tools
 cask "orbstack"
+
+# Database
+cask "dbeaver-community"
+
+# Design
 cask "figma"
 
 # Network
 cask "clash-verge-rev"
-
-# Productivity
-cask "bob"
 
 # Communication
 cask "slack"
@@ -44,4 +49,4 @@ cask "telegram"
 cask "google-chrome"
 
 # Fonts
-cask "font-fira-code"
+cask "font-fira-code-nerd-font"
