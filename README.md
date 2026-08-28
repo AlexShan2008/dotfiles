@@ -115,6 +115,18 @@ When chezmoi reports that a destination changed since it was last written:
 2. Keep the local version with `chezmoi re-add <path>`, or restore the managed version with `chezmoi apply <path>`.
 3. Use `chezmoi apply --force <path>` only after reviewing that specific target; avoid forcing the entire repository.
 
+## 7. Automated Toolchain Updates
+
+[Renovate](https://docs.renovatebot.com/) updates the tools pinned in [`~/.proto/.prototools`](home/dot_proto/dot_prototools). Install the Renovate GitHub App for this repository once; [`renovate.json`](renovate.json) handles the rest. Other repository dependencies, including Homebrew packages and GitHub Actions, stay outside this automation.
+
+Renovate checks on the first day of each month, waits 14 days after a release, groups the proto-managed tools into one pull request, and merges it after CI passes. Node.js stays on its configured major release line so that an odd-numbered, non-LTS release is not selected automatically. Failed CI leaves the pull request open for investigation.
+
+After an automated update is merged, apply it locally with the normal sync command:
+
+```bash
+chezmoi update
+```
+
 ## Repository Map
 
 | Path | Purpose |
@@ -123,6 +135,7 @@ When chezmoi reports that a destination changed since it was last written:
 | [Brewfile](Brewfile) | Homebrew packages and applications |
 | [home](home) | Files mapped into the home directory |
 | [home/.chezmoiscripts](home/.chezmoiscripts) | Bootstrap and lifecycle automation |
+| [renovate.json](renovate.json) | Monthly proto toolchain updates |
 
 Useful inspection commands: `chezmoi status`, `chezmoi diff`, `chezmoi managed`, `chezmoi data`, and `chezmoi cd`.
 

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "proto"
+  ],
+  "timezone": "Asia/Shanghai",
+  "schedule": [
+    "* 0-5 1 * *"
+  ],
+  "minimumReleaseAge": "14 days",
+  "dependencyDashboard": false,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "rebaseWhen": "behind-base-branch",
+  "proto": {
+    "managerFilePatterns": [
+      "/^home\\/dot_proto\\/dot_prototools$/"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Group and automerge proto toolchain updates",
+      "matchManagers": [
+        "proto"
+      ],
+      "groupName": "proto toolchain",
+      "groupSlug": "proto-toolchain",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": false
+    },
+    {
+      "description": "Keep Node.js on the configured release line",
+      "matchManagers": [
+        "proto"
+      ],
+      "matchDepNames": [
+        "node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    }
+  ]
+}
