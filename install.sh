@@ -31,7 +31,12 @@ main() {
   fi
 
   log "INFO" "Running chezmoi init --apply..."
-  "${CHEZMOI_BIN}" init --apply "${GITHUB_USER}"
+  # Force chezmoi's builtin git (go-git) for the initial clone: on a fresh
+  # Mac, /usr/bin/git is only a stub that pops the Xcode CLT install dialog
+  # and exits non-zero immediately (it does not wait for the dialog), which
+  # makes chezmoi's autodetected system git fail before the repo is even
+  # cloned. The run_once_before script installs real CLT/git afterward.
+  "${CHEZMOI_BIN}" init --apply --use-builtin-git=true "${GITHUB_USER}"
 
   log "INFO" "Done! Restart your shell to pick up changes."
 }

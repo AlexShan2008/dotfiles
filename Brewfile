@@ -30,6 +30,7 @@ cask "sublime-merge"
 
 # Development Tools
 cask "orbstack"
+cask "docker-desktop"
 
 # Database
 cask "dbeaver-community"
@@ -44,6 +45,9 @@ cask "clash-verge-rev"
 cask "slack"
 cask "zoom"
 cask "telegram"
+cask "wechat"
+cask "wetype"          # WeType
+cask "tencent-meeting" # Tencent Meeting
 
 # Browsers
 cask "google-chrome"
