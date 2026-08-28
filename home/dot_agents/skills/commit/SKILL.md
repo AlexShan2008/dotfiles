@@ -5,47 +5,44 @@ description: Review current Git changes, exclude secrets or risky hunks, infer t
 
 # Safe Commit
 
-Use this skill when the user asks to commit the current changes.
+Create one safe, logical commit without disturbing unrelated work.
 
 ## Workflow
 
-1. Inspect the repository first.
-   - Run `git rev-list --count HEAD` to determine whether this is the first commit.
-   - Run `git log --oneline -n 15` to infer the active commit style.
-   - Run `git status --short`, `git diff --stat`, `git diff`, and `git diff --cached` if anything is staged.
+## 1. Inspect the repository
 
-2. Determine the commit format.
-   - If the repository already has a clear convention, follow it.
-   - If this is the first commit, use Conventional Commits.
-   - If the existing history is inconsistent, prefer Conventional Commits.
+* Confirm the directory is a Git repository.
+* Determine whether `HEAD` exists. When it does, run `git rev-list --count HEAD` and `git log --oneline -n 15`.
+* Run `git status --short`, `git diff --stat`, and `git diff`. If anything is staged, also run `git diff --cached`.
+* Identify the intended logical change. If the working tree contains unrelated changes, preserve them and ask before creating multiple commits.
 
-3. Review the staged changes for sensitive or risky content.
-   - If `ai-commit-scan` is available, run `ai-commit-scan --staged` before proposing a commit.
-   - If the command is unavailable, perform the same review manually from the staged diff.
-   - If the scan reports findings, review them carefully and exclude risky files or hunks.
-   - Do not echo raw secret values back to the user.
-   - Use `ai-commit-scan --all` only when broader inspection is necessary.
+## 2. Choose the commit format
 
-4. Perform a mandatory security and sensitive-content review.
-   - Never commit secrets, access tokens, API keys, private keys, passwords, cookies, session material, or `.env` files containing real values.
-   - Exclude PII and credentials.
-   - Exclude files or hunks that introduce meaningful security risk, such as hardcoded secrets, removed auth checks, dangerous shell execution, insecure deserialization, or unjustified security-setting relaxations.
-   - Exclude local-only or generated files unless they are clearly intended to be versioned.
-   - If sensitive or risky content is found, do not stage it. Tell the user which paths or hunks were excluded and why.
+* Follow a clear convention in the existing history.
+* For the first commit or inconsistent history, use Conventional Commits.
+* Prefer `<type>: <subject>`. Add `(scope)` only when it clarifies a package or subsystem, especially in a monorepo.
 
-5. Stage only the safe subset.
-   - Do not revert or disturb unrelated user changes.
-   - Prefer one logical commit. If the working tree contains unrelated changes, explain that and ask before splitting.
+## 3. Stage and review the safe subset
 
-6. Write the commit message.
-   - Keep it concise, professional, and specific.
-   - Prioritize the problem solved first, then the action taken.
-   - Avoid filler and vague phrasing.
-   - Never add `Co-authored-by`.
-   - If Conventional Commits apply, use them cleanly and minimally.
+* Stage only changes that belong to the intended commit; never revert, overwrite, or disturb unrelated work.
+* Review the complete staged diff with `git diff --cached`.
+* Run `ai-commit-scan --staged` when available; otherwise perform the same review manually. Use `--all` only when broader inspection is necessary.
+* Review every finding. Unstage unsafe files or hunks, then inspect the staged diff again.
+* Never commit secrets, credentials, tokens, private keys, passwords, cookies, session data, real `.env` values, or PII.
+* Exclude unjustified security regressions such as removed auth checks, dangerous shell execution, insecure deserialization, or relaxed security settings.
+* Exclude unintended local-only or generated files.
+* Never reveal raw secret values. If no safe changes remain, do not commit.
 
-7. Commit and report.
-   - Commit only the safe staged changes.
-   - Report the final commit message, any excluded files or hunks, and notable security checks performed.
+## 4. Write the message
 
-If there are no safe changes to commit, do not create a commit.
+* Keep the subject concise, specific, and professional. State the problem solved or outcome before implementation detail.
+* Match the repository's language and style; otherwise use clean, minimal Conventional Commits.
+* Omit the body unless it adds essential context. If used, keep it to at most 100 characters, excluding required footers.
+* Avoid vague wording such as `update`, `changes`, `fix stuff`, or `WIP`.
+* Never add `Co-authored-by`.
+
+## 5. Commit and report
+
+* Commit only the reviewed staged changes.
+* Verify the resulting commit and remaining working-tree state.
+* Report the commit hash and final message, excluded files or hunks with reasons, and the security checks performed.
