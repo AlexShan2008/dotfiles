@@ -37,14 +37,6 @@ else
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
 
-# Install Claude Code
-if command -v claude >/dev/null 2>&1; then
-  echo "[INFO] Claude Code already installed"
-else
-  echo "[INFO] Installing Claude Code..."
-  "${PROTO_HOME}/shims/npm" install -g @anthropic-ai/claude-code || true
-fi
-
 # Install EAS CLI
 if command -v eas >/dev/null 2>&1; then
   echo "[INFO] EAS CLI already installed"

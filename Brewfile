@@ -29,6 +29,8 @@ cask "zed"
 cask "sublime-merge"
 
 # Development Tools
+cask "codex-app"
+cask "claude-code"
 cask "orbstack"
 cask "docker-desktop"
 

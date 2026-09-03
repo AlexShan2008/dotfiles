@@ -16,7 +16,7 @@ During setup:
 - Approve the Xcode Command Line Tools dialog if it appears.
 - Enter your administrator password if Homebrew requests it.
 
-The installer handles chezmoi, Homebrew packages, shell plugins, development tools, Claude Code, managed files, and macOS preferences. When it finishes:
+The installer handles chezmoi, Homebrew packages (including the Codex app), shell plugins, development tools, Claude Code, managed files, and macOS preferences. When it finishes:
 
 ```bash
 exec zsh
