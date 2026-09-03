@@ -11,7 +11,7 @@
     "* 0-5 1 * *"
   ],
   "minimumReleaseAge": "14 days",
-  "dependencyDashboard": false,
+  "dependencyDashboard": true,
   "semanticCommits": "enabled",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
