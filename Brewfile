@@ -12,6 +12,7 @@ brew "starship"
 brew "direnv"
 brew "gnupg"
 brew "pinentry-mac"
+brew "oxipng"
 
 # Mac App Store
 mas "Xcode", id: 497799835
